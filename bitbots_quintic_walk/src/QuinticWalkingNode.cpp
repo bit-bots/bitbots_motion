@@ -9,6 +9,7 @@ QuinticWalkingNode::QuinticWalkingNode() {
     _currentOrders[0] = 0.0;
     _currentOrders[1] = 0.0;
     _currentOrders[2] = 0.0;
+    _oneStepStartPhase = 0;
 
     _marker_id = 1;
     _odom_broadcaster = tf::TransformBroadcaster();
@@ -23,7 +24,7 @@ QuinticWalkingNode::QuinticWalkingNode() {
     _odom_msg = nav_msgs::Odometry();
     _pubOdometry = _nh.advertise<nav_msgs::Odometry>("walk_odometry", 1);
     _pubSupport = _nh.advertise<std_msgs::Char>("walk_support_state", 1);
-    _subCmdVel = _nh.subscribe("cmd_vel", 1, &QuinticWalkingNode::cmdVelCb, this, ros::TransportHints().tcpNoDelay());
+    _subWalkCommand = _nh.subscribe("cmd_vel", 1, &QuinticWalkingNode::walkCommandCb, this, ros::TransportHints().tcpNoDelay());
     _subRobState = _nh.subscribe("robot_state", 1, &QuinticWalkingNode::robStateCb, this,
                                  ros::TransportHints().tcpNoDelay());
     //todo not really needed
@@ -93,6 +94,16 @@ void QuinticWalkingNode::run() {
             bool newGoals = _walkEngine.updateState(dt, _currentOrders, walkableState);
             if (newGoals) { //todo
                 calculateJointGoals();
+            }
+
+            if (_oneStepOnly) {
+                if (_walkEngine.getPhase() >= _oneStepStartPhase) {
+                    _oneStepStartPhase = _walkEngine.getPhase();
+                } else {
+                    _oneStepOnly = false;
+                    _oneStepStartPhase = 0;
+                    _currentOrders = {0, 0, 0};
+                }
             }
         }
 
@@ -190,14 +201,30 @@ double QuinticWalkingNode::getTimeDelta() {
     return dt;
 }
 
-void QuinticWalkingNode::cmdVelCb(const geometry_msgs::Twist msg) {
+void QuinticWalkingNode::walkCommandCb(const bitbots_msgs::WalkCommand msg) {
     // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
     // other axis. 
 
-    // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
-    // factor 2 since the order distance is only for a single step, not double step
-    double factor = 1.0 / (_params.freq) / 2;
-    _currentOrders = {msg.linear.x * factor, msg.linear.y * factor, msg.angular.z * factor};
+    if (msg.use_goal) {
+        double x = msg.walk_goal.position.x;
+        double y = msg.walk_goal.position.y;
+        tf::Quaternion rotation(msg.walk_goal.orientation.x,
+                                msg.walk_goal.orientation.y,
+                                msg.walk_goal.orientation.z,
+                                msg.walk_goal.orientation.w);
+        tf::Matrix3x3 rotation_matrix(rotation);
+        double roll, pitch, yaw;
+        rotation_matrix.getRPY(roll, pitch, yaw);
+
+        _currentOrders = {x, y, yaw};
+    } else {
+        // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
+        // factor 2 since the order distance is only for a single step, not double step
+        double factor = 1.0 / (_params.freq) / 2;
+        _currentOrders = {msg.cmd_vel.linear.x * factor, msg.cmd_vel.linear.y * factor, msg.cmd_vel.angular.z * factor};
+    }
+
+    _oneStepOnly = msg.single_step;
 
     // the orders should not extend beyond a maximal step size
     for (int i = 0; i < 3; i++) {

@@ -27,6 +27,7 @@ https://github.com/Rhoban/model/
 #include <bitbots_quintic_walk/WalkingDebug.h>
 #include <bitbots_msgs/JointCommand.h>
 #include <bitbots_msgs/FootPressure.h>
+#include <bitbots_msgs/WalkCommand.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <eigen_conversions/eigen_msg.h>
@@ -58,7 +59,7 @@ private:
     void publishMarkers();
     void publishOdometry();
 
-    void cmdVelCb(geometry_msgs::Twist msg);
+    void walkCommandCb(bitbots_msgs::WalkCommand msg);
     void imuCb(sensor_msgs::Imu msg);
     void pressureCb(bitbots_msgs::FootPressure msg);
     void robStateCb(humanoid_league_msgs::RobotControlState msg);
@@ -74,6 +75,8 @@ private:
     bool _first_run;
 
     double _engineFrequency;
+    bool _oneStepOnly;
+    double _oneStepStartPhase;
 
     bool _phaseResetActive;
     double _groundMinPressure;
@@ -117,7 +120,7 @@ private:
     ros::Publisher _pubDebug;
     ros::Publisher _pubDebugMarker;
 
-    ros::Subscriber _subCmdVel;
+    ros::Subscriber _subWalkCommand;
     ros::Subscriber _subRobState;
     ros::Subscriber _subJointStates;
     ros::Subscriber _subKick;
