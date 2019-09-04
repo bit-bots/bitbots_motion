@@ -3,8 +3,9 @@
   <name>bitbots_dynamic_kick</name>
   <version>0.1.2</version>
   <description>
-	  The bitbots_dynamic_kick package implements a kick which is not based on keyframe animations.
-	  Instead it aims to dynamically reach it's movement goal while keeping the robot stable and controllable.
+      The bitbots_dynamic_kick package implements a kick which is not based on keyframe animations.
+
+      Instead it aims to dynamically reach it's movement goal while keeping the robot stable and controllable.
   </description>
 
   <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
@@ -34,5 +35,6 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
+      <language>cpp</language>
   </export>
 </package>

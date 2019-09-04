@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         visualization_msgs
         nav_msgs
-        )
+        bitbots_docs)
 
 generate_dynamic_reconfigure_options(
         cfg/bitbots_dynamic_kick_params.cfg
@@ -39,7 +39,7 @@ set(SOURCES
         src/kick_ik.cpp)
 
 add_executable(KickNode ${SOURCES})
-
 add_dependencies(KickNode ${PROJECT_NAME}_gencfg)
-
 target_link_libraries(KickNode ${catkin_LIBRARIES})
+
+enable_bitbots_docs()
