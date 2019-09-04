@@ -39,6 +39,8 @@
   <test_depend>plotjuggler</test_depend>
   <test_depend>bitbots_odometry</test_depend>
 
+  <depend>bitbots_docs</depend>
+
   <export>
     <bitbots_documentation>
       <status>tested_integration</status>

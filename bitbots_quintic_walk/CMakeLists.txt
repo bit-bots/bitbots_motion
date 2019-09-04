@@ -31,6 +31,7 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         moveit_ros_robot_interaction
         bitbots_msgs
+        bitbots_docs
         )
 
 find_package(Eigen3 REQUIRED)
@@ -81,3 +82,5 @@ add_executable(WalkNode ${SOURCES})
 add_dependencies(WalkNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(WalkNode ${catkin_LIBRARIES} ${CODE_LIBRARIES})
+
+enable_bitbots_docs()
