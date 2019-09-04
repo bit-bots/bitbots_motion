@@ -9,7 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         eigen_conversions
         bio_ik
+        bitbots_docs
         )
+
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
@@ -62,3 +64,5 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+
+enable_bitbots_docs()

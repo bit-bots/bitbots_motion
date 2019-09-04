@@ -22,6 +22,8 @@
   <depend>eigen_conversions</depend>
   <depend>bio_ik</depend>
 
+  <depend>bitbots_docs</depend>
+
   <export>
     <bitbots_documentation>
       <status>stable</status>
