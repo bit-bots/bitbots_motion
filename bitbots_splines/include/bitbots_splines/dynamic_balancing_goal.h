@@ -73,7 +73,7 @@ class DynamicBalancingGoal : public bio_ik::Goal {
     // Last element (after all of the regular links) is the reference link
     bio_ik::Frame reference_link = bio_ik::inverse(context.getLinkFrame(balancing_context_->getLinkCount()));
 
-    // static torques from gravity
+    // static torques from gravity_
     for (size_t i = 0; i < balancing_context_->getLinkCount(); i++) {
       tf2::Vector3 center = balancing_context_->getLinkCenter(i); // m
       double mass = balancing_context_->getLinkMass(i);   // kg

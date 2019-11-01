@@ -107,6 +107,8 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response) {
   std::unique_ptr<bio_ik::BioIKKinematicsQueryOptions> ik_goals = stabilizer_.stabilize(response);
 
   // compute motor goals from IK
+  ik_.left_support = walk_engine_.isLeftSupport() || walk_engine_.isDoubleSupport();
+  ik_.right_support = !walk_engine_.isLeftSupport() || walk_engine_.isDoubleSupport();
   bitbots_splines::JointGoals motor_goals = ik_.calculate(std::move(ik_goals));
 
   // publish them
@@ -393,7 +395,7 @@ void WalkNode::initializeEngine() {
 }
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "quintic_walking");
+  ros::init(argc, argv, "walking");
   // init node
   bitbots_quintic_walk::WalkNode node;
 
