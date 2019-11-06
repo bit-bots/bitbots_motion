@@ -10,7 +10,7 @@
  */
 class GravityCompensator {
  public:
-  GravityCompensator(moveit::core::RobotModelConstPtr &robot_model) {
+  GravityCompensator(moveit::core::RobotModelConstPtr robot_model) {
     efforts_.resize(robot_model->getVariableCount());
     // Initialize link masses and centers
     for (auto *link : robot_model->getLinkModels()) {
