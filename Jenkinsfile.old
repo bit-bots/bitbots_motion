@@ -1,0 +1,33 @@
+@Library('bitbots_jenkins_library')_
+
+pipeline {
+    agent any
+
+	triggers {
+			cron 'H 6 * * * '
+	}
+
+    stages {
+        stage('Document') {
+            agent { docker image: 'registry.bit-bots.de:5000/bitbots_builder', registryUrl: 'http://registry.bit-bots.de:5000', alwaysPull: true, args: '--volume /srv/shared_catkin_install_space:/srv/catkin_install' }
+            steps {
+                linkCatkinWorkspace()
+                catkinBuild("Documentation")
+
+                stash includes: 'bitbots_odometry/docs/_out/**', name: 'docs_output'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'bitbots_odometry/docs/_out/',
+                            reportFiles: 'index.html', reportName: 'Built Documentation', reportTitles: ''])
+            }
+        }
+
+        stage('Deploy') {
+            agent { label 'webserver' }
+            when { branch 'master' }
+            steps {
+                unstash 'docs_output'
+                deployDocs('bitbots_odometry')
+            }
+        }
+    }
+}
+
