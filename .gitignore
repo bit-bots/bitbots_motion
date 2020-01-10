@@ -4,10 +4,10 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # auto-generated documentation
-**/doc/_build
-**/doc/_generated
-**/doc/manifest.yaml
-**/doc/html
+**/docs/_build
+**/docs/_out
+**/docs/cppapi
+**/docs/pyapi
 
 # User-specific stuff:
 .idea/workspace.xml
@@ -164,9 +164,6 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# Sphinx documentation
-docs/_build/
-
 # PyBuilder
 target/
 
@@ -194,10 +191,3 @@ ENV/
 # Rope project settings
 .ropeproject
 
-
-/bitbots_body_behaviour/scripts/behaviour_graph.png
-
-# auto-generated documentation
-**/docs/_build
-**/docs/_out
-**/docs/conf.py
