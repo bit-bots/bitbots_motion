@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         visualization_msgs
         nav_msgs
+        control_toolbox
         )
 
 generate_dynamic_reconfigure_options(
