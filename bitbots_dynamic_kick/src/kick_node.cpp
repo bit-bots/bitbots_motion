@@ -25,6 +25,7 @@ KickNode::KickNode() :
   support_foot_publisher_ = node_handle_.advertise<std_msgs::Char>("dynamic_kick_support_state", 1, /* latch = */ true);
   cop_l_subscriber_ = node_handle_.subscribe("cop_l", 1, &KickNode::copLCallback, this);
   cop_r_subscriber_ = node_handle_.subscribe("cop_r", 1, &KickNode::copRCallback, this);
+  imu_subscriber_ = node_handle_.subscribe("imu/data", 1, &Stabilizer::IMUCallback, &stabilizer_);
   server_.start();
 }
 
@@ -160,15 +161,17 @@ void KickNode::loopEngine() {
   while (server_.isActive() && !server_.isPreemptRequested()) {
     KickPositions positions = engine_.update(1.0 / engine_rate_);
     // TODO: should positions be an std::optional? how are errors represented?
-    KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(1.0 / engine_rate_));
-    bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
+    //KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(1.0 / engine_rate_));
+    bitbots_splines::JointGoals motor_goals = ik_.calculate(positions);
+    bitbots_splines::JointGoals stabilized_motor_goals =
+        stabilizer_.stabilizeGoals(motor_goals, ros::Duration(1.0 / engine_rate_), positions);
 
     bitbots_msgs::KickFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();
     feedback.chosen_foot = engine_.isLeftKick() ?
                            bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
     server_.publishFeedback(feedback);
-    publishGoals(motor_goals);
+    publishGoals(stabilized_motor_goals);
 
     publishSupportFoot(engine_.isLeftKick());
 

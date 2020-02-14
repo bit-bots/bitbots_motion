@@ -7,6 +7,8 @@
 #include <tf2_ros/transform_listener.h>
 #include <control_toolbox/pid.h>
 #include <bitbots_splines/abstract_stabilizer.h>
+#include <bitbots_splines/abstract_ik.h>
+#include <sensor_msgs/Imu.h>
 #include "kick_utils.h"
 #include "visualizer.h"
 
@@ -27,15 +29,59 @@ class Stabilizer :
    */
 
   KickPositions stabilize(const KickPositions &positions, const ros::Duration &dt) override;
+  bitbots_splines::JointGoals stabilizeGoals(const bitbots_splines::JointGoals &goals,
+                                             const ros::Duration &dt,
+                                             const KickPositions &positions);
+  void IMUCallback(const sensor_msgs::Imu &imu_msg);
   void reset() override;
   void useCop(bool use);
   void setRobotModel(moveit::core::RobotModelPtr model);
  private:
+  KickPositions cartesianImuOrientation(const KickPositions &positions, const ros::Duration &dt);
+  KickPositions cartesianImuOrientationFused(const KickPositions &positions, const ros::Duration &dt);
+  KickPositions cartesianImuVelocity(const KickPositions &positions, const ros::Duration &dt);
+  KickPositions cartesianCop(const KickPositions &positions, const ros::Duration &dt);
+
+  bitbots_splines::JointGoals ankleImuOrientation(const bitbots_splines::JointGoals &goals,
+                                                  const ros::Duration &dt,
+                                                  const KickPositions &positions);
+  bitbots_splines::JointGoals ankleImuOrientationFused(const bitbots_splines::JointGoals &goals,
+                                                       const ros::Duration &dt,
+                                                       const KickPositions &positions);
+  bitbots_splines::JointGoals ankleImuVelocity(const bitbots_splines::JointGoals &goals,
+                                               const ros::Duration &dt,
+                                               const KickPositions &positions);
+  bitbots_splines::JointGoals ankleCop(const bitbots_splines::JointGoals &goals,
+                                       const ros::Duration &dt,
+                                       const KickPositions &positions);
+
+  bitbots_splines::JointGoals hipImuOrientation(const bitbots_splines::JointGoals &goals,
+                                                const ros::Duration &dt,
+                                                const KickPositions &positions);
+  bitbots_splines::JointGoals hipImuOrientationFused(const bitbots_splines::JointGoals &goals,
+                                                     const ros::Duration &dt,
+                                                     const KickPositions &positions);
+  bitbots_splines::JointGoals hipImuVelocity(const bitbots_splines::JointGoals &goals,
+                                             const ros::Duration &dt,
+                                             const KickPositions &positions);
+  bitbots_splines::JointGoals hipCop(const bitbots_splines::JointGoals &goals,
+                                     const ros::Duration &dt,
+                                     const KickPositions &positions);
+
   moveit::core::RobotModelPtr kinematic_model_;
   control_toolbox::Pid pid_x_;
   control_toolbox::Pid pid_y_;
+  control_toolbox::Pid pid_imu_roll_velocity_;
+  control_toolbox::Pid pid_imu_pitch_velocity_;
+  control_toolbox::Pid pid_imu_roll_;
+  control_toolbox::Pid pid_imu_pitch_;
 
   bool use_cop_;
+
+  double imu_roll_velocity_;
+  double imu_pitch_velocity_;
+  double imu_roll_;
+  double imu_pitch_;
 };
 }
 

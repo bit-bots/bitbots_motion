@@ -52,6 +52,7 @@ class KickNode {
   ros::Publisher support_foot_publisher_;
   ros::Subscriber cop_l_subscriber_;
   ros::Subscriber cop_r_subscriber_;
+  ros::Subscriber imu_subscriber_;
   ActionServer server_;
   KickEngine engine_;
   Stabilizer stabilizer_;
