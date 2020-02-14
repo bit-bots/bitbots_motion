@@ -28,6 +28,10 @@ pid_x/d: 0
 pid_y/p: 0.5
 pid_y/i: 0.0015
 pid_y/d: 1.5
+pid_imu_roll/p: 1
+pid_imu_pitch/p: 1
+pid_imu_roll_velocity/p: 1
+pid_imu_pitch_velocity/p: 1
 
 ### Visualization ###
 spline_smoothness: 100
