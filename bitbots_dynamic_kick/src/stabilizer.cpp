@@ -3,18 +3,12 @@
 namespace bitbots_dynamic_kick {
 
 Stabilizer::Stabilizer() {
-  ros::NodeHandle pid_x_nh = ros::NodeHandle("/dynamic_kick/pid_x");
-  ros::NodeHandle pid_y_nh = ros::NodeHandle("/dynamic_kick/pid_y");
-  ros::NodeHandle pid_imu_roll_nh = ros::NodeHandle("/dynamic_kick/pid_imu_roll");
-  ros::NodeHandle pid_imu_pitch_nh = ros::NodeHandle("/dynamic_kick/pid_imu_pitch");
-  ros::NodeHandle pid_imu_roll_velocity_nh = ros::NodeHandle("/dynamic_kick/pid_imu_roll_velocity");
-  ros::NodeHandle pid_imu_pitch_velocity_nh = ros::NodeHandle("/dynamic_kick/pid_imu_pitch_velocity");
-  pid_x_.init(pid_x_nh, false);
-  pid_y_.init(pid_y_nh, false);
-  pid_imu_roll_.init(pid_imu_roll_nh, false);
-  pid_imu_pitch_.init(pid_imu_pitch_nh, false);
-  pid_imu_roll_velocity_.init(pid_imu_roll_velocity_nh, false);
-  pid_imu_pitch_velocity_.init(pid_imu_pitch_velocity_nh, false);
+  pid_x_.init({"dynamic_kick/pid_x"}, false);
+  pid_y_.init({"dynamic_kick/pid_y"}, false);
+  pid_imu_roll_.init({"dynamic_kick/pid_imu_roll"}, false);
+  pid_imu_pitch_.init({"dynamic_kick/pid_imu_pitch"}, false);
+  pid_imu_roll_velocity_.init({"dynamic_kick/pid_imu_roll_velocity"}, false);
+  pid_imu_pitch_velocity_.init({"dynamic_kick/pid_imu_pitch_velocity"}, false);
   reset();
 }
 
