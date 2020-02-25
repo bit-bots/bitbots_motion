@@ -50,7 +50,7 @@ class Stabilizer :
    * @param dt Change in time since last call
    * @returns Adjusted position goals
    */
-  KickPositions cartesianHipCop(const KickPositions &positions, const ros::Duration &dt);
+  KickPositions cartesianTrunkCop(const KickPositions &positions, const ros::Duration &dt);
 
   bitbots_splines::JointGoals ankleImuOrientation(const bitbots_splines::JointGoals &goals,
                                                   const ros::Duration &dt,
@@ -75,7 +75,7 @@ class Stabilizer :
                                              const ros::Duration &dt,
                                              const KickPositions &positions);
   /**
-   * Stabilize the robot by rotating its torso around the hip and using the center-of-pressure on the sole as
+   * Stabilize the robot by rotating its trunk around the hip and using the center-of-pressure on the sole as
    * stability measurement.
    *
    * @param goals Joint goals which the stabilizer ultimately tries to reach
@@ -83,19 +83,19 @@ class Stabilizer :
    * @param positions Position goals which the IK transformed into the provided Joint goals
    * @return Adjusted joint goals
    */
-  bitbots_splines::JointGoals hipCop(const bitbots_splines::JointGoals &goals,
-                                     const ros::Duration &dt,
-                                     const KickPositions &positions);
+  bitbots_splines::JointGoals jointHipCop(const bitbots_splines::JointGoals &goals,
+                                          const ros::Duration &dt,
+                                          const KickPositions &positions);
 
   /**
-   * Calculate errors of torso to center-of-pressure in x and y direction
+   * Calculate errors of trunk to center-of-pressure in x and y direction
    * @return (x-error, y-error)
    */
   std::pair<double, double> getCopErrors(const bitbots_dynamic_kick::KickPositions &positions);
 
   moveit::core::RobotModelPtr kinematic_model_;
-  control_toolbox::Pid pid_cartesian_hip_cop_x_;
-  control_toolbox::Pid pid_cartesian_hip_cop_y_;
+  control_toolbox::Pid pid_cartesian_trunk_cop_x_;
+  control_toolbox::Pid pid_cartesian_trunk_cop_y_;
   control_toolbox::Pid pid_joint_hip_cop_x_;
   control_toolbox::Pid pid_joint_hip_cop_y_;
   control_toolbox::Pid pid_imu_roll_velocity_;
