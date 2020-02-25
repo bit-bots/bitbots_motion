@@ -88,8 +88,8 @@ class Stabilizer :
                                      const KickPositions &positions);
 
   moveit::core::RobotModelPtr kinematic_model_;
-  control_toolbox::Pid pid_x_;
-  control_toolbox::Pid pid_y_;
+  control_toolbox::Pid pid_cartesian_hip_cop_x_;
+  control_toolbox::Pid pid_cartesian_hip_cop_y_;
   control_toolbox::Pid pid_joint_hip_cop_x_;
   control_toolbox::Pid pid_joint_hip_cop_y_;
   control_toolbox::Pid pid_imu_roll_velocity_;
