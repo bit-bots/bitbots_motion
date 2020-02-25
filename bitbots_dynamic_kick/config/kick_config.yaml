@@ -28,6 +28,8 @@ pid_x/d: 0
 pid_y/p: 0.5
 pid_y/i: 0.0015
 pid_y/d: 1.5
+pid_cartesian_hip_x/p: 1
+pid_cartesian_hip_y/p: 1
 pid_joint_hip_x/p: 1
 pid_joint_hip_y/p: 1
 pid_imu_roll/p: 1

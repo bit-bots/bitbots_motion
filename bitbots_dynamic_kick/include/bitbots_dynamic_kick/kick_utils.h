@@ -14,6 +14,13 @@ struct KickPositions {
   bool is_left_kick = true;
   tf2::Transform trunk_pose;
   tf2::Transform flying_foot_pose;
+
+  /**
+   * Should center-of-pressure support be used to stabilize this specific goal.
+   *
+   * If false, this indicates to any center-of-pressure stabilizer that they should not be used despite being
+   * active in general.
+   */
   bool cop_support_point = false;
 };
 
