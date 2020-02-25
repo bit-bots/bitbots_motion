@@ -132,12 +132,9 @@ bitbots_splines::JointGoals Stabilizer::hipImuVelocity(const bitbots_splines::Jo
   return goals;
 }
 
-KickPositions Stabilizer::cartesianCop(const bitbots_dynamic_kick::KickPositions &positions, const ros::Duration &dt) {
+KickPositions Stabilizer::cartesianHipCop(const bitbots_dynamic_kick::KickPositions &positions, const ros::Duration &dt) {
   KickPositions stabilized_positions = positions;
   if (positions.cop_support_point && use_cop_) {
-    /* calculate stabilizing target from center of pressure
-     * the cop is in corresponding sole frame
-     * optimal stabilizing would be centered above sole center */
     double cop_x, cop_y, cop_x_error, cop_y_error;
     if (positions.is_left_kick) {
       cop_x = cop_right.x;

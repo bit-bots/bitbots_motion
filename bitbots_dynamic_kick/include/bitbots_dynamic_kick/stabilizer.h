@@ -40,7 +40,17 @@ class Stabilizer :
   KickPositions cartesianImuOrientation(const KickPositions &positions, const ros::Duration &dt);
   KickPositions cartesianImuOrientationFused(const KickPositions &positions, const ros::Duration &dt);
   KickPositions cartesianImuVelocity(const KickPositions &positions, const ros::Duration &dt);
-  KickPositions cartesianCop(const KickPositions &positions, const ros::Duration &dt);
+
+  /**
+   * calculate stabilizing target from center of pressure
+   * the cop is in corresponding sole frame
+   * optimal stabilizing would be centered above sole center
+   *
+   * @param positions Position goals which the stabilizer ultimately tries to reach
+   * @param dt Change in time since last call
+   * @returns Adjusted position goals
+   */
+  KickPositions cartesianHipCop(const KickPositions &positions, const ros::Duration &dt);
 
   bitbots_splines::JointGoals ankleImuOrientation(const bitbots_splines::JointGoals &goals,
                                                   const ros::Duration &dt,
