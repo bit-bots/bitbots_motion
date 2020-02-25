@@ -87,6 +87,12 @@ class Stabilizer :
                                      const ros::Duration &dt,
                                      const KickPositions &positions);
 
+  /**
+   * Calculate errors of torso to center-of-pressure in x and y direction
+   * @return (x-error, y-error)
+   */
+  std::pair<double, double> getCopErrors(const bitbots_dynamic_kick::KickPositions &positions);
+
   moveit::core::RobotModelPtr kinematic_model_;
   control_toolbox::Pid pid_cartesian_hip_cop_x_;
   control_toolbox::Pid pid_cartesian_hip_cop_y_;
