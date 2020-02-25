@@ -111,16 +111,7 @@ bitbots_splines::JointGoals Stabilizer::hipCop(const bitbots_splines::JointGoals
                                                const KickPositions &positions) {
   bitbots_splines::JointGoals stabilized_goals = goals;
   if (positions.cop_support_point && use_cop_) {
-    double cop_x, cop_y, cop_x_error, cop_y_error;
-    if (positions.is_left_kick) {
-      cop_x = cop_right.x;
-      cop_y = cop_right.y;
-    } else {
-      cop_x = cop_left.x;
-      cop_y = cop_left.y;
-    }
-    cop_x_error = cop_x - positions.trunk_pose.getOrigin().getX();
-    cop_y_error = cop_y - positions.trunk_pose.getOrigin().getY();
+    auto[cop_x_error, cop_y_error] = getCopErrors(positions);
 
     double x_correction = pid_cartesian_hip_cop_x_.computeCommand(cop_x_error, dt);
     double y_correction = pid_cartesian_hip_cop_y_.computeCommand(cop_y_error, dt);
@@ -164,16 +155,7 @@ KickPositions Stabilizer::cartesianHipCop(const bitbots_dynamic_kick::KickPositi
                                           const ros::Duration &dt) {
   KickPositions stabilized_positions = positions;
   if (positions.cop_support_point && use_cop_) {
-    double cop_x, cop_y, cop_x_error, cop_y_error;
-    if (positions.is_left_kick) {
-      cop_x = cop_right.x;
-      cop_y = cop_right.y;
-    } else {
-      cop_x = cop_left.x;
-      cop_y = cop_left.y;
-    }
-    cop_x_error = cop_x - positions.trunk_pose.getOrigin().getX();
-    cop_y_error = cop_y - positions.trunk_pose.getOrigin().getY();
+    auto[cop_x_error, cop_y_error] = getCopErrors(positions);
 
     double x_correction = pid_joint_hip_cop_x_.computeCommand(cop_x_error, dt);
     double y_correction = pid_joint_hip_cop_y_.computeCommand(cop_y_error, dt);
@@ -197,6 +179,21 @@ KickPositions Stabilizer::cartesianImuVelocity(const bitbots_dynamic_kick::KickP
                                                const ros::Duration &dt) {
   return positions;
 
+}
+
+std::pair<double, double> Stabilizer::getCopErrors(const bitbots_dynamic_kick::KickPositions &positions) {
+  double cop_x, cop_y, cop_x_error, cop_y_error;
+  if (positions.is_left_kick) {
+    cop_x = cop_right.x;
+    cop_y = cop_right.y;
+  } else {
+    cop_x = cop_left.x;
+    cop_y = cop_left.y;
+  }
+  cop_x_error = cop_x - positions.trunk_pose.getOrigin().getX();
+  cop_y_error = cop_y - positions.trunk_pose.getOrigin().getY();
+
+  return {cop_x_error, cop_y_error};
 }
 
 void Stabilizer::useCop(bool use) {
