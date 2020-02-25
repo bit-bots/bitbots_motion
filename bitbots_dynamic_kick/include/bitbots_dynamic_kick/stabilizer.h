@@ -74,6 +74,15 @@ class Stabilizer :
   bitbots_splines::JointGoals hipImuVelocity(const bitbots_splines::JointGoals &goals,
                                              const ros::Duration &dt,
                                              const KickPositions &positions);
+  /**
+   * Stabilize the robot by rotating its torso around the hip and using the center-of-pressure on the sole as
+   * stability measurement.
+   *
+   * @param goals Joint goals which the stabilizer ultimately tries to reach
+   * @param dt Change in time since last calls
+   * @param positions Position goals which the IK transformed into the provided Joint goals
+   * @return Adjusted joint goals
+   */
   bitbots_splines::JointGoals hipCop(const bitbots_splines::JointGoals &goals,
                                      const ros::Duration &dt,
                                      const KickPositions &positions);
@@ -81,6 +90,8 @@ class Stabilizer :
   moveit::core::RobotModelPtr kinematic_model_;
   control_toolbox::Pid pid_x_;
   control_toolbox::Pid pid_y_;
+  control_toolbox::Pid pid_joint_hip_cop_x_;
+  control_toolbox::Pid pid_joint_hip_cop_y_;
   control_toolbox::Pid pid_imu_roll_velocity_;
   control_toolbox::Pid pid_imu_pitch_velocity_;
   control_toolbox::Pid pid_imu_roll_;

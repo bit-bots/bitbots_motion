@@ -3,24 +3,22 @@
 namespace bitbots_dynamic_kick {
 
 Stabilizer::Stabilizer() {
-  ros::NodeHandle pid_x_nh = ros::NodeHandle("/dynamic_kick/pid_x");
-  ros::NodeHandle pid_y_nh = ros::NodeHandle("/dynamic_kick/pid_y");
-  ros::NodeHandle pid_imu_roll_nh = ros::NodeHandle("/dynamic_kick/pid_imu_roll");
-  ros::NodeHandle pid_imu_pitch_nh = ros::NodeHandle("/dynamic_kick/pid_imu_pitch");
-  ros::NodeHandle pid_imu_roll_velocity_nh = ros::NodeHandle("/dynamic_kick/pid_imu_roll_velocity");
-  ros::NodeHandle pid_imu_pitch_velocity_nh = ros::NodeHandle("/dynamic_kick/pid_imu_pitch_velocity");
-  pid_x_.init(pid_x_nh, false);
-  pid_y_.init(pid_y_nh, false);
-  pid_imu_roll_.init(pid_imu_roll_nh, false);
-  pid_imu_pitch_.init(pid_imu_pitch_nh, false);
-  pid_imu_roll_velocity_.init(pid_imu_roll_velocity_nh, false);
-  pid_imu_pitch_velocity_.init(pid_imu_pitch_velocity_nh, false);
+  pid_x_.init({"dynamic_kick/pid_x"}, false);
+  pid_y_.init({"dynamic_kick/pid_y"}, false);
+  pid_joint_hip_cop_x_.init({"dynamic_kick/pid_joint_hip_x"}, false);
+  pid_joint_hip_cop_y.init({"dynamic_kick/pid_joint_hip_y"}, false);
+  pid_imu_roll_.init({"dynamic_kick/pid_imu_roll"}, false);
+  pid_imu_pitch_.init({"dynamic_kick/pid_imu_pitch"}, false);
+  pid_imu_roll_velocity_.init({"dynamic_kick/pid_imu_roll_velocity"}, false);
+  pid_imu_pitch_velocity_.init({"dynamic_kick/pid_imu_pitch_velocity"}, false);
   reset();
 }
 
 void Stabilizer::reset() {
   pid_x_.reset();
   pid_y_.reset();
+  pid_joint_hip_cop_x_.reset();
+  pid_joint_hip_cop_y.reset();
   pid_imu_roll_.reset();
   pid_imu_pitch_.reset();
   pid_imu_roll_velocity_.reset();
@@ -111,7 +109,37 @@ bitbots_splines::JointGoals Stabilizer::ankleImuVelocity(const bitbots_splines::
 bitbots_splines::JointGoals Stabilizer::hipCop(const bitbots_splines::JointGoals &goals,
                                                const ros::Duration &dt,
                                                const KickPositions &positions) {
-  return goals;
+  bitbots_splines::JointGoals stabilized_goals = goals;
+  if (positions.cop_support_point && use_cop_) {
+    double cop_x, cop_y, cop_x_error, cop_y_error;
+    if (positions.is_left_kick) {
+      cop_x = cop_right.x;
+      cop_y = cop_right.y;
+    } else {
+      cop_x = cop_left.x;
+      cop_y = cop_left.y;
+    }
+    cop_x_error = cop_x - positions.trunk_pose.getOrigin().getX();
+    cop_y_error = cop_y - positions.trunk_pose.getOrigin().getY();
+
+    double x_correction = pid_cartesian_hip_cop_x_.computeCommand(cop_x_error, dt);
+    double y_correction = pid_cartesian_hip_cop_y_.computeCommand(cop_y_error, dt);
+
+    std::string roll_joint_name, pitch_joint_name;
+    if (positions.is_left_kick) {
+      roll_joint_name = "LHipRoll";
+      pitch_joint_name = "LHipPitch";
+    } else {
+      roll_joint_name = "RHipRoll";
+      pitch_joint_name = "LHipPitch";
+    }
+
+    stabilized_goals = bitbots_splines::joint_goals_update_diff(stabilized_goals,
+                                                                {roll_joint_name, pitch_joint_name},
+                                                                {x_correction, y_correction});
+  }
+
+  return stabilized_goals;
 }
 
 bitbots_splines::JointGoals Stabilizer::hipImuOrientation(const bitbots_splines::JointGoals &goals,
