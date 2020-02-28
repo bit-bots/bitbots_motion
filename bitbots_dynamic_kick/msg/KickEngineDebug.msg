@@ -1,0 +1,3 @@
+std_msgs/Header header
+geometry_msgs/Transform trunk_pose
+geometry_msgs/Transform foot_pose

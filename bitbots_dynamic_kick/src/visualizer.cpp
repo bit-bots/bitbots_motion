@@ -20,6 +20,7 @@ Visualizer::Visualizer(const std::string &base_topic) :
       /* queue_size */ 5, /* latch */ true);
   windup_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_windup_point",
       /* queue_size */ 5, /* latch */ true);
+  positions_publisher_ = node_handle_.advertise<KickEngineDebug>(base_topic_ + "positions", 5, false);
 }
 
 void Visualizer::setParams(VisualizationParams params) {
@@ -76,6 +77,14 @@ void Visualizer::displayWindupPoint(const tf2::Vector3 &kick_windup_point, const
   marker.color.g = 1;
 
   windup_publisher_.publish(marker);
+}
+
+void Visualizer::publishGoals(const KickPositions &positions) {
+  KickEngineDebug msg;
+  msg.header.stamp = ros::Time::now();
+  msg.trunk_pose = tf2::toMsg(positions.trunk_pose);
+  msg.foot_pose = tf2::toMsg(positions.flying_foot_pose);
+  positions_publisher_.publish(msg);
 }
 
 }

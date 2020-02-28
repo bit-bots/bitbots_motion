@@ -27,7 +27,8 @@ KickPositions Stabilizer::stabilize(const KickPositions &positions, const ros::D
 
 bitbots_splines::JointGoals Stabilizer::stabilizeGoals(const bitbots_splines::JointGoals &goals,
                                                        const ros::Duration &dt, const KickPositions &positions) {
-  return ankleImuVelocity(goals, dt, positions);
+  return goals;
+  //return ankleImuVelocity(goals, dt, positions);
 }
 
 bitbots_splines::JointGoals Stabilizer::ankleCop(const bitbots_splines::JointGoals &goals,

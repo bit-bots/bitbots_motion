@@ -17,10 +17,23 @@ find_package(catkin REQUIRED COMPONENTS
         visualization_msgs
         nav_msgs
         control_toolbox
+        message_generation
+        message_runtime
         )
 
 generate_dynamic_reconfigure_options(
         cfg/bitbots_dynamic_kick_params.cfg
+)
+
+add_message_files(
+        FILES
+        KickEngineDebug.msg
+)
+
+generate_messages(
+        DEPENDENCIES
+        geometry_msgs
+        std_msgs
 )
 
 catkin_package(
