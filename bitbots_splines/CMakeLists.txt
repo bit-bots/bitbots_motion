@@ -41,6 +41,7 @@ set(SOURCES
 		src/Spline/spline.cpp
         src/Spline/pose_spline.cpp
         src/Spline/position_spline.cpp
+		src/Spline/velocity_pose_spline.cpp
 		src/Utils/newton_binomial.cpp
 		src/Utils/combination.cpp
         include/bitbots_splines/abstract_engine.h

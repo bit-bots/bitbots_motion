@@ -33,6 +33,12 @@ class PoseSpline {
 
   std::string getDebugString();
 
+  void addPoint(double time, const geometry_msgs::Pose &pose);
+  void addPoint(double time, const tf2::Vector3 &position, const tf2::Quaternion &orientation);
+  void addPoint(double time, double x, double y, double z, double roll, double pitch, double yaw);
+  void addPoint(double time, double x, double y, double z, const geometry_msgs::Quaternion &orientation);
+  void addPoint(double time, const tf2::Transform &pose);
+
   SmoothSpline *x();
   SmoothSpline *y();
   SmoothSpline *z();
@@ -40,14 +46,13 @@ class PoseSpline {
   SmoothSpline *pitch();
   SmoothSpline *yaw();
 
- private:
+ protected:
   SmoothSpline x_;
   SmoothSpline y_;
   SmoothSpline z_;
   SmoothSpline roll_;
   SmoothSpline pitch_;
   SmoothSpline yaw_;
-
 };
 }
 #endif //BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POSE_SPLINE_H_

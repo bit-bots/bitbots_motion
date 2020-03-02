@@ -83,6 +83,42 @@ tf2::Quaternion PoseSpline::getOrientation(double time) {
   return quat;
 }
 
+void PoseSpline::addPoint(double time, const tf2::Vector3 &position, const tf2::Quaternion &orientation) {
+  tf2::Transform pose(orientation, position);
+  addPoint(time, pose);
+}
+
+void PoseSpline::addPoint(double time, const geometry_msgs::Pose &pose) {
+  tf2::Transform pose_transform;
+  tf2::convert(pose, pose_transform);
+
+  addPoint(time, pose_transform);
+}
+
+void PoseSpline::addPoint(double time, const tf2::Transform &pose) {
+  double r, p, y;
+  tf2::Matrix3x3(pose.getRotation()).getRPY(r, p, y);
+  addPoint(time, pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z(), r, p ,y);
+}
+
+void PoseSpline::addPoint(double time, double x, double y, double z, double roll, double pitch, double yaw) {
+  x_.addPoint(time, x);
+  y_.addPoint(time, y);
+  z_.addPoint(time, z);
+  roll_.addPoint(time, roll);
+  pitch_.addPoint(time, pitch);
+  yaw_.addPoint(time, yaw);
+}
+
+void PoseSpline::addPoint(double time, double x, double y, double z, const geometry_msgs::Quaternion &orientation) {
+  tf2::Transform pose;
+  pose.setOrigin({x, y, z});
+  tf2::Quaternion rotation;
+  tf2::convert(orientation, rotation);
+  pose.setRotation(rotation);
+  addPoint(time, pose);
+}
+
 SmoothSpline *PoseSpline::x() {
   return &x_;
 }
