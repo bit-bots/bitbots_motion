@@ -3,7 +3,7 @@
 
 #include <optional>
 #include <std_msgs/Header.h>
-#include <bitbots_splines/pose_spline.h>
+#include <bitbots_splines/velocity_pose_spline.h>
 #include <bitbots_splines/position_spline.h>
 #include <bitbots_splines/abstract_engine.h>
 #include <bitbots_msgs/KickGoal.h>
@@ -27,13 +27,8 @@ struct KickParams {
   double trunk_pitch;
   double trunk_yaw;
 
-  double move_trunk_time = 1;
-  double raise_foot_time = 1;
-  double move_to_ball_time = 1;
-  double kick_time = 1;
-  double move_back_time = 1;
-  double lower_foot_time = 1;
-  double move_trunk_back_time = 1;
+  double move_trunk_time;
+  double velocity;
 
   double stabilizing_point_x;
   double stabilizing_point_y;
@@ -131,7 +126,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   tf2::Quaternion kick_direction_;
   float kick_speed_;
   bool is_left_kick_;
-  bitbots_splines::PoseSpline flying_foot_spline_, trunk_spline_;
+  bitbots_splines::VelocityPoseSpline flying_foot_spline_;
+  bitbots_splines::PoseSpline trunk_spline_;
   KickParams params_;
   PhaseTimings phase_timings_;
   tf2::Vector3 windup_point_;

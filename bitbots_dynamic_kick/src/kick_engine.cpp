@@ -9,7 +9,7 @@ KickEngine::KickEngine() :
 void KickEngine::reset() {
   time_ = 0;
   trunk_spline_ = bitbots_splines::PoseSpline();
-  flying_foot_spline_ = bitbots_splines::PoseSpline();
+  flying_foot_spline_ = bitbots_splines::VelocityPoseSpline();
 }
 
 void KickEngine::setGoals(const KickGoals &goals) {
@@ -43,8 +43,8 @@ KickPositions KickEngine::update(double dt) {
   /* calculate if we want to use center-of-pressure in the current phase
    * use COP based support point only when the weight is on the support foot
    * while raising/lowering the foot, the weight is not completely on the support foot (that's why /2.0)*/
-  if (time_ > params_.move_trunk_time + params_.raise_foot_time / 2.0 &&
-      time_ < phase_timings_.move_back + params_.lower_foot_time / 2.0) {
+  if (time_ > phase_timings_.move_trunk + phase_timings_.raise_foot / 2.0 &&
+      time_ < phase_timings_.move_back + phase_timings_.lower_foot / 2.0) {
     positions.cop_support_point = true;
   } else {
     positions.cop_support_point = false;
@@ -81,15 +81,6 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
    *  - move trunk back
    */
 
-  /* calculate timings for this kick */
-  phase_timings_.move_trunk = 0 + params_.move_trunk_time;
-  phase_timings_.raise_foot = phase_timings_.move_trunk + params_.raise_foot_time;
-  phase_timings_.windup = phase_timings_.raise_foot + params_.move_to_ball_time;
-  phase_timings_.kick = phase_timings_.windup + params_.kick_time;
-  phase_timings_.move_back = phase_timings_.kick + params_.move_back_time;
-  phase_timings_.lower_foot = phase_timings_.move_back + params_.lower_foot_time;
-  phase_timings_.move_trunk_back = phase_timings_.lower_foot + params_.move_trunk_back_time;
-
   int kick_foot_sign;
   if (is_left_kick_) {
     kick_foot_sign = 1;
@@ -100,38 +91,8 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   windup_point_ = calcKickWindupPoint();
 
   /* build vector of speeds in each direction */
-  double speed_yaw = tf2::getYaw(kick_direction_);
-  tf2::Vector3 speed_vector(cos(speed_yaw), sin(speed_yaw), 0);
-
-  /* Flying foot position */
-  flying_foot_spline_.x()->addPoint(0, flying_foot_pose.position.x);
-  flying_foot_spline_.x()->addPoint(phase_timings_.move_trunk, 0);
-  flying_foot_spline_.x()->addPoint(phase_timings_.raise_foot, 0);
-  flying_foot_spline_.x()->addPoint(phase_timings_.windup, windup_point_.x(), 0, 0);
-  flying_foot_spline_.x()->addPoint(phase_timings_.kick, ball_position_.x(),
-                                    speed_vector.x() * kick_speed_, 0);
-  flying_foot_spline_.x()->addPoint(phase_timings_.move_back, 0);
-  flying_foot_spline_.x()->addPoint(phase_timings_.lower_foot, 0);
-  flying_foot_spline_.x()->addPoint(phase_timings_.move_trunk_back, 0);
-
-  flying_foot_spline_.y()->addPoint(0, flying_foot_pose.position.y);
-  flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk, kick_foot_sign * params_.foot_distance);
-  flying_foot_spline_.y()->addPoint(phase_timings_.raise_foot, kick_foot_sign * params_.foot_distance);
-  flying_foot_spline_.y()->addPoint(phase_timings_.windup, windup_point_.y(), 0, 0);
-  flying_foot_spline_.y()
-      ->addPoint(phase_timings_.kick, ball_position_.y(), speed_vector.y() * kick_speed_, 0);
-  flying_foot_spline_.y()->addPoint(phase_timings_.move_back, kick_foot_sign * params_.foot_distance);
-  flying_foot_spline_.y()->addPoint(phase_timings_.lower_foot, kick_foot_sign * params_.foot_distance);
-  flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk_back, kick_foot_sign * params_.foot_distance);
-
-  flying_foot_spline_.z()->addPoint(0, flying_foot_pose.position.z);
-  flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk, 0);
-  flying_foot_spline_.z()->addPoint(phase_timings_.raise_foot, params_.foot_rise);
-  flying_foot_spline_.z()->addPoint(phase_timings_.windup, params_.foot_rise);
-  flying_foot_spline_.z()->addPoint(phase_timings_.kick, params_.foot_rise);
-  flying_foot_spline_.z()->addPoint(phase_timings_.move_back, params_.foot_rise);
-  flying_foot_spline_.z()->addPoint(phase_timings_.lower_foot, 0.4 * params_.foot_rise);
-  flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk_back, 0);
+  //double speed_yaw = tf2::getYaw(kick_direction_);
+  //tf2::Vector3 speed_vector(cos(speed_yaw), sin(speed_yaw), 0);
 
   /* Flying foot orientation */
   /* Construct a start_rotation as quaternion from Pose msg */
@@ -140,58 +101,39 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   double start_r, start_p, start_y;
   tf2::Matrix3x3(start_rotation).getRPY(start_r, start_p, start_y);
 
-  /* Also construct one for the target */
-  tf2::Quaternion target_rotation(flying_foot_pose.orientation.x, flying_foot_pose.orientation.y,
-                                  flying_foot_pose.orientation.z, flying_foot_pose.orientation.w);
-  double target_r, target_p, target_y;
-  tf2::Matrix3x3(target_rotation).getRPY(target_r, target_p, target_y);
+  double target_y = calcKickFootYaw();
 
-  target_y = calcKickFootYaw();
+  /* Flying foot position */
+  flying_foot_spline_.setVelocity(params_.velocity);
+  flying_foot_spline_.setTimeOffset(params_.move_trunk_time);
+  // start pose
+  flying_foot_spline_.addPoint(flying_foot_pose);
+  // move trunk
+  flying_foot_spline_.addPoint(0, kick_foot_sign * params_.foot_distance, 0, flying_foot_pose.orientation);
+  // raise foot
+  flying_foot_spline_
+      .addPoint(0, kick_foot_sign * params_.foot_distance, params_.foot_rise, flying_foot_pose.orientation);
+  // windup point
+  flying_foot_spline_.addPoint(windup_point_.x(), windup_point_.y(), params_.foot_rise, start_r, start_p, target_y);
+  // kick
+  flying_foot_spline_.addPoint(ball_position_.x(), ball_position_.y(), params_.foot_rise, start_r, start_p, target_y);
+  // move foot back
+  flying_foot_spline_
+      .addPoint(0, kick_foot_sign * params_.foot_distance, params_.foot_rise, flying_foot_pose.orientation);
+  // lower foot
+  flying_foot_spline_
+      .addPoint(0, kick_foot_sign * params_.foot_distance, 0.4 * params_.foot_rise, flying_foot_pose.orientation);
+  // move trunk back
+  flying_foot_spline_.addPoint(0, kick_foot_sign * params_.foot_distance, 0, flying_foot_pose.orientation);
 
-  /* Add these quaternions in the same fashion as before to our splines (current, target, current) */
-  flying_foot_spline_.roll()->addPoint(0, start_r);
-  flying_foot_spline_.roll()->addPoint(phase_timings_.windup, start_r);
-  flying_foot_spline_.roll()->addPoint(phase_timings_.move_trunk_back, start_r);
-  flying_foot_spline_.pitch()->addPoint(0, start_p);
-  flying_foot_spline_.pitch()->addPoint(phase_timings_.windup, start_p);
-  flying_foot_spline_.pitch()->addPoint(phase_timings_.move_trunk_back, start_p);
-  flying_foot_spline_.yaw()->addPoint(0, start_y);
-  flying_foot_spline_.yaw()->addPoint(phase_timings_.raise_foot, start_y);
-  flying_foot_spline_.yaw()->addPoint(phase_timings_.windup, target_y);
-  flying_foot_spline_.yaw()->addPoint(phase_timings_.kick, target_y);
-  flying_foot_spline_.yaw()->addPoint(phase_timings_.move_back, start_y);
-  flying_foot_spline_.yaw()->addPoint(phase_timings_.move_trunk_back, start_y);
-
-  /* Stabilizing point */
-  trunk_spline_.x()->addPoint(0, 0);
-  trunk_spline_.x()->addPoint(phase_timings_.move_trunk, params_.stabilizing_point_x);
-  trunk_spline_.x()->addPoint(phase_timings_.raise_foot, params_.stabilizing_point_x);
-  trunk_spline_.x()->addPoint(phase_timings_.windup, params_.stabilizing_point_x);
-  trunk_spline_.x()->addPoint(phase_timings_.kick, params_.stabilizing_point_x);
-  trunk_spline_.x()->addPoint(phase_timings_.move_back, params_.stabilizing_point_x);
-  trunk_spline_.x()->addPoint(phase_timings_.lower_foot, params_.stabilizing_point_x);
-  trunk_spline_.x()->addPoint(phase_timings_.move_trunk_back, 0);
-
-  trunk_spline_.y()->addPoint(0, kick_foot_sign * (params_.foot_distance / 2.0));
-  trunk_spline_.y()
-      ->addPoint(phase_timings_.move_trunk, kick_foot_sign * (-params_.stabilizing_point_y));
-  trunk_spline_.y()
-      ->addPoint(phase_timings_.raise_foot, kick_foot_sign * (-params_.stabilizing_point_y));
-  trunk_spline_.y()
-      ->addPoint(phase_timings_.windup, kick_foot_sign * (-params_.stabilizing_point_y));
-  trunk_spline_.y()
-      ->addPoint(phase_timings_.kick, kick_foot_sign * (-params_.stabilizing_point_y));
-  trunk_spline_.y()
-      ->addPoint(phase_timings_.move_back, kick_foot_sign * (-params_.stabilizing_point_y));
-  trunk_spline_.y()
-      ->addPoint(phase_timings_.lower_foot, kick_foot_sign * (-params_.stabilizing_point_y));
-  trunk_spline_.y()
-      ->addPoint(phase_timings_.move_trunk_back, kick_foot_sign * (params_.foot_distance / 2.0));
-
-  trunk_spline_.z()->addPoint(0, trunk_pose.translation.z);
-  trunk_spline_.z()->addPoint(phase_timings_.move_trunk, params_.trunk_height);
-  trunk_spline_.z()->addPoint(phase_timings_.lower_foot, params_.trunk_height);
-  trunk_spline_.z()->addPoint(phase_timings_.move_trunk_back, trunk_pose.translation.z);
+  std::vector times = flying_foot_spline_.getTimes();
+  phase_timings_.move_trunk = times.at(1);
+  phase_timings_.raise_foot = times.at(2);
+  phase_timings_.windup = times.at(3);
+  phase_timings_.kick = times.at(4);
+  phase_timings_.move_back = times.at(5);
+  phase_timings_.lower_foot = times.at(6);
+  phase_timings_.move_trunk_back = times.at(7);
 
   /* Construct quaternion for trunk rotation */
   tf2::Quaternion trunk_rotation(trunk_pose.rotation.x, trunk_pose.rotation.y,
@@ -199,18 +141,70 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   double trunk_r, trunk_p, trunk_y;
   tf2::Matrix3x3(trunk_rotation).getRPY(trunk_r, trunk_p, trunk_y);
 
-  trunk_spline_.roll()->addPoint(0, trunk_r);
-  trunk_spline_.roll()->addPoint(phase_timings_.raise_foot, kick_foot_sign * params_.trunk_roll);
-  trunk_spline_.roll()->addPoint(phase_timings_.lower_foot, kick_foot_sign * params_.trunk_roll);
-  trunk_spline_.roll()->addPoint(phase_timings_.move_trunk_back, trunk_r);
-  trunk_spline_.pitch()->addPoint(0, trunk_p);
-  trunk_spline_.pitch()->addPoint(phase_timings_.raise_foot, params_.trunk_pitch);
-  trunk_spline_.pitch()->addPoint(phase_timings_.lower_foot, params_.trunk_pitch);
-  trunk_spline_.pitch()->addPoint(phase_timings_.move_trunk_back, trunk_p);
-  trunk_spline_.yaw()->addPoint(0, trunk_y);
-  trunk_spline_.yaw()->addPoint(phase_timings_.raise_foot, kick_foot_sign * params_.trunk_yaw);
-  trunk_spline_.yaw()->addPoint(phase_timings_.lower_foot, kick_foot_sign * params_.trunk_yaw);
-  trunk_spline_.yaw()->addPoint(phase_timings_.move_trunk_back, trunk_y);
+  // start pose
+  trunk_spline_.addPoint(0,
+                         0,
+                         kick_foot_sign * (params_.foot_distance / 2.0),
+                         trunk_pose.translation.z,
+                         trunk_r,
+                         trunk_p,
+                         trunk_y);
+  // move trunk
+  trunk_spline_.addPoint(phase_timings_.move_trunk,
+                         params_.stabilizing_point_x,
+                         -kick_foot_sign * params_.stabilizing_point_y,
+                         params_.trunk_height,
+                         trunk_r,
+                         trunk_p,
+                         trunk_y);
+  // raise foot
+  trunk_spline_.addPoint(phase_timings_.raise_foot,
+                         params_.stabilizing_point_x,
+                         -kick_foot_sign * params_.stabilizing_point_y,
+                         params_.trunk_height,
+                         kick_foot_sign * params_.trunk_roll,
+                         params_.trunk_pitch,
+                         kick_foot_sign * params_.trunk_yaw);
+  // windup point
+  trunk_spline_.addPoint(phase_timings_.windup,
+                         params_.stabilizing_point_x,
+                         -kick_foot_sign * params_.stabilizing_point_y,
+                         params_.trunk_height,
+                         kick_foot_sign * params_.trunk_roll,
+                         params_.trunk_pitch,
+                         kick_foot_sign * params_.trunk_yaw);
+  // kick
+  trunk_spline_.addPoint(phase_timings_.kick,
+                         params_.stabilizing_point_x,
+                         -kick_foot_sign * params_.stabilizing_point_y,
+                         params_.trunk_height,
+                         kick_foot_sign * params_.trunk_roll,
+                         params_.trunk_pitch,
+                         kick_foot_sign * params_.trunk_yaw);
+  // move foot back
+  trunk_spline_.addPoint(phase_timings_.move_back,
+                         params_.stabilizing_point_x,
+                         -kick_foot_sign * params_.stabilizing_point_y,
+                         params_.trunk_height,
+                         kick_foot_sign * params_.trunk_roll,
+                         params_.trunk_pitch,
+                         kick_foot_sign * params_.trunk_yaw);
+  // lower foot
+  trunk_spline_.addPoint(phase_timings_.lower_foot,
+                         params_.stabilizing_point_x,
+                         -kick_foot_sign * params_.stabilizing_point_y,
+                         params_.trunk_height,
+                         kick_foot_sign * params_.trunk_roll,
+                         params_.trunk_pitch,
+                         kick_foot_sign * params_.trunk_yaw);
+  // move trunk back
+  trunk_spline_.addPoint(phase_timings_.move_trunk_back,
+                         0,
+                         kick_foot_sign * (params_.foot_distance / 2.0),
+                         trunk_pose.translation.z,
+                         trunk_r,
+                         trunk_p,
+                         trunk_y);
 }
 
 std::pair<geometry_msgs::Point, geometry_msgs::Quaternion> KickEngine::transformGoal(
@@ -322,7 +316,7 @@ bool KickEngine::isLeftKick() {
 }
 
 int KickEngine::getPercentDone() const {
-  return int(time_ / phase_timings_.move_trunk_back * 100);
+  return std::min(int(time_ / phase_timings_.move_trunk_back * 100), 100);
 }
 
 bitbots_splines::PoseSpline KickEngine::getFlyingSplines() const {
