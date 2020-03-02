@@ -190,8 +190,8 @@ std::pair<double, double> Stabilizer::getCopErrors(const bitbots_dynamic_kick::K
     cop_x = cop_left.x;
     cop_y = cop_left.y;
   }
-  cop_x_error = cop_x - positions.trunk_pose.getOrigin().getX();
-  cop_y_error = cop_y - positions.trunk_pose.getOrigin().getY();
+  cop_x_error = positions.trunk_pose.getOrigin().getX() - cop_x;
+  cop_y_error = positions.trunk_pose.getOrigin().getY() - cop_y;
 
   return {cop_x_error, cop_y_error};
 }
