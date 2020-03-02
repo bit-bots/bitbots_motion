@@ -30,6 +30,8 @@ pid_joint_ankle_imu_orientation_roll/p: 1
 pid_joint_ankle_imu_orientation_pitch/p: 1
 pid_joint_ankle_imu_velocity_roll/p: 1
 pid_joint_ankle_imu_velocity_pitch/p: 1
+pid_joint_hip_imu_velocity_roll/p: 1
+pid_joint_hip_imu_velocity_pitch/p: 1
 
 ### Visualization ###
 spline_smoothness: 100
