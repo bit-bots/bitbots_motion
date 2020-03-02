@@ -52,28 +52,28 @@ class Stabilizer :
    */
   KickPositions cartesianTrunkCop(const KickPositions &positions, const ros::Duration &dt);
 
-  bitbots_splines::JointGoals ankleImuOrientation(const bitbots_splines::JointGoals &goals,
-                                                  const ros::Duration &dt,
-                                                  const KickPositions &positions);
-  bitbots_splines::JointGoals ankleImuOrientationFused(const bitbots_splines::JointGoals &goals,
+  bitbots_splines::JointGoals jointAnkleImuOrientation(const bitbots_splines::JointGoals &goals,
                                                        const ros::Duration &dt,
                                                        const KickPositions &positions);
-  bitbots_splines::JointGoals ankleImuVelocity(const bitbots_splines::JointGoals &goals,
-                                               const ros::Duration &dt,
-                                               const KickPositions &positions);
-  bitbots_splines::JointGoals ankleCop(const bitbots_splines::JointGoals &goals,
-                                       const ros::Duration &dt,
-                                       const KickPositions &positions);
+  bitbots_splines::JointGoals jointAnkleImuOrientationFused(const bitbots_splines::JointGoals &goals,
+                                                            const ros::Duration &dt,
+                                                            const KickPositions &positions);
+  bitbots_splines::JointGoals jointAnkleImuVelocity(const bitbots_splines::JointGoals &goals,
+                                                    const ros::Duration &dt,
+                                                    const KickPositions &positions);
+  bitbots_splines::JointGoals jointAnkleCop(const bitbots_splines::JointGoals &goals,
+                                            const ros::Duration &dt,
+                                            const KickPositions &positions);
 
-  bitbots_splines::JointGoals hipImuOrientation(const bitbots_splines::JointGoals &goals,
-                                                const ros::Duration &dt,
-                                                const KickPositions &positions);
-  bitbots_splines::JointGoals hipImuOrientationFused(const bitbots_splines::JointGoals &goals,
+  bitbots_splines::JointGoals jointHipImuOrientation(const bitbots_splines::JointGoals &goals,
                                                      const ros::Duration &dt,
                                                      const KickPositions &positions);
-  bitbots_splines::JointGoals hipImuVelocity(const bitbots_splines::JointGoals &goals,
-                                             const ros::Duration &dt,
-                                             const KickPositions &positions);
+  bitbots_splines::JointGoals jointHipImuOrientationFused(const bitbots_splines::JointGoals &goals,
+                                                          const ros::Duration &dt,
+                                                          const KickPositions &positions);
+  bitbots_splines::JointGoals jointHipImuVelocity(const bitbots_splines::JointGoals &goals,
+                                                  const ros::Duration &dt,
+                                                  const KickPositions &positions);
   /**
    * Stabilize the robot by rotating its trunk around the hip and using the center-of-pressure on the sole as
    * stability measurement.
@@ -98,10 +98,10 @@ class Stabilizer :
   control_toolbox::Pid pid_cartesian_trunk_cop_y_;
   control_toolbox::Pid pid_joint_hip_cop_x_;
   control_toolbox::Pid pid_joint_hip_cop_y_;
-  control_toolbox::Pid pid_imu_roll_velocity_;
-  control_toolbox::Pid pid_imu_pitch_velocity_;
-  control_toolbox::Pid pid_imu_roll_;
-  control_toolbox::Pid pid_imu_pitch_;
+  control_toolbox::Pid pid_joint_ankle_imu_velocity_roll_;
+  control_toolbox::Pid pid_joint_ankle_imu_velocity_pitch_;
+  control_toolbox::Pid pid_joint_ankle_imu_orientation_roll_;
+  control_toolbox::Pid pid_joint_ankle_imu_orientation_pitch_;
 
   bool use_cop_;
 
