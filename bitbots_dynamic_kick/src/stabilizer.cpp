@@ -11,6 +11,8 @@ Stabilizer::Stabilizer() {
   pid_joint_ankle_imu_orientation_pitch_.init({"dynamic_kick/pid_joint_ankle_imu_orientation_pitch"}, false);
   pid_joint_ankle_imu_velocity_roll_.init({"dynamic_kick/pid_joint_ankle_imu_velocity_roll"}, false);
   pid_joint_ankle_imu_velocity_pitch_.init({"dynamic_kick/pid_joint_ankle_imu_velocity_pitch"}, false);
+  pid_joint_hip_imu_velocity_roll_.init({"dynamic_kick/pid_joint_hip_imu_velocity_roll"}, false);
+  pid_joint_hip_imu_velocity_pitch_.init({"dynamic_kick/pid_joint_hip_imu_velocity_pitch"}, false);
   reset();
 }
 
@@ -23,6 +25,8 @@ void Stabilizer::reset() {
   pid_joint_ankle_imu_orientation_pitch_.reset();
   pid_joint_ankle_imu_velocity_roll_.reset();
   pid_joint_ankle_imu_velocity_pitch_.reset();
+  pid_joint_hip_imu_velocity_roll_.reset();
+  pid_joint_hip_imu_velocity_pitch_.reset();
 }
 
 KickPositions Stabilizer::stabilize(const KickPositions &positions, const ros::Duration &dt) {
@@ -117,14 +121,7 @@ bitbots_splines::JointGoals Stabilizer::jointHipCop(const bitbots_splines::Joint
     double x_correction = pid_cartesian_trunk_cop_x_.computeCommand(cop_x_error, dt);
     double y_correction = pid_cartesian_trunk_cop_y_.computeCommand(cop_y_error, dt);
 
-    std::string roll_joint_name, pitch_joint_name;
-    if (positions.is_left_kick) {
-      roll_joint_name = "LHipRoll";
-      pitch_joint_name = "LHipPitch";
-    } else {
-      roll_joint_name = "RHipRoll";
-      pitch_joint_name = "LHipPitch";
-    }
+    auto[roll_joint_name, pitch_joint_name] = getHipJoints(positions);
 
     stabilized_goals = bitbots_splines::joint_goals_update_diff(stabilized_goals,
                                                                 {roll_joint_name, pitch_joint_name},
@@ -149,7 +146,18 @@ bitbots_splines::JointGoals Stabilizer::jointHipImuOrientationFused(const bitbot
 bitbots_splines::JointGoals Stabilizer::jointHipImuVelocity(const bitbots_splines::JointGoals &goals,
                                                             const ros::Duration &dt,
                                                             const KickPositions &positions) {
-  return goals;
+  bitbots_splines::JointGoals stabilized_goals = goals;
+  auto[roll_joint_name, pitch_joint_name] = getHipJoints(positions);
+
+  // error is target - state, here target is 0
+  double roll_correction = pid_joint_hip_imu_velocity_roll_.computeCommand(0 - imu_roll_velocity_, dt);
+  double pitch_correction = pid_joint_hip_imu_velocity_pitch_.computeCommand(0 - imu_pitch_velocity_, dt);
+  
+  stabilized_goals = bitbots_splines::joint_goals_update_diff(stabilized_goals,
+                                                              {roll_joint_name, pitch_joint_name},
+                                                              {roll_correction, pitch_correction});
+
+  return stabilized_goals;
 }
 
 KickPositions Stabilizer::cartesianTrunkCop(const bitbots_dynamic_kick::KickPositions &positions,
@@ -195,6 +203,19 @@ std::pair<double, double> Stabilizer::getCopErrors(const bitbots_dynamic_kick::K
   cop_y_error = positions.trunk_pose.getOrigin().getY() - cop_y;
 
   return {cop_x_error, cop_y_error};
+}
+
+std::pair<std::string, std::string> Stabilizer::getHipJoints(const KickPositions &positions) {
+  std::string roll_joint_name, pitch_joint_name;
+  if (positions.is_left_kick) {
+    roll_joint_name = "LHipRoll";
+    pitch_joint_name = "LHipPitch";
+  } else {
+    roll_joint_name = "RHipRoll";
+    pitch_joint_name = "LHipPitch";
+  }
+
+  return std::pair<std::string, std::string> {roll_joint_name, pitch_joint_name};
 }
 
 void Stabilizer::useCop(bool use) {

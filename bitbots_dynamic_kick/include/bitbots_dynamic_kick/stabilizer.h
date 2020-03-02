@@ -93,6 +93,9 @@ class Stabilizer :
    */
   std::pair<double, double> getCopErrors(const bitbots_dynamic_kick::KickPositions &positions);
 
+  /** @return (roll_joint_name, pitch_joint_name) */
+  std::pair<std::string, std::string> getHipJoints(const KickPositions &positions);
+
   moveit::core::RobotModelPtr kinematic_model_;
   control_toolbox::Pid pid_cartesian_trunk_cop_x_;
   control_toolbox::Pid pid_cartesian_trunk_cop_y_;
@@ -102,6 +105,8 @@ class Stabilizer :
   control_toolbox::Pid pid_joint_ankle_imu_velocity_pitch_;
   control_toolbox::Pid pid_joint_ankle_imu_orientation_roll_;
   control_toolbox::Pid pid_joint_ankle_imu_orientation_pitch_;
+  control_toolbox::Pid pid_joint_hip_imu_velocity_roll_;
+  control_toolbox::Pid pid_joint_hip_imu_velocity_pitch_;
 
   bool use_cop_;
 
