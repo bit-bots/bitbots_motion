@@ -26,10 +26,10 @@ pid_cartesian_trunk_x/p: 1
 pid_cartesian_trunk_y/p: 1
 pid_joint_hip_x/p: 1
 pid_joint_hip_y/p: 1
-pid_imu_roll/p: 1
-pid_imu_pitch/p: 1
-pid_imu_roll_velocity/p: 1
-pid_imu_pitch_velocity/p: 1
+pid_joint_ankle_imu_orientation_roll/p: 1
+pid_joint_ankle_imu_orientation_pitch/p: 1
+pid_joint_ankle_imu_velocity_roll/p: 1
+pid_joint_ankle_imu_velocity_pitch/p: 1
 
 ### Visualization ###
 spline_smoothness: 100
