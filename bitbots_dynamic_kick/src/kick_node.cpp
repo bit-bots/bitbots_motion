@@ -53,16 +53,11 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.trunk_roll = config.trunk_roll;
   params.trunk_pitch = config.trunk_pitch;
   params.trunk_yaw = config.trunk_yaw;
-  params.move_trunk_time = config.move_trunk_time;
-  params.raise_foot_time = config.raise_foot_time;
-  params.move_to_ball_time = config.move_to_ball_time;
-  params.kick_time = config.kick_time;
-  params.move_back_time = config.move_back_time;
-  params.lower_foot_time = config.lower_foot_time;
-  params.move_trunk_back_time = config.move_trunk_back_time;
   params.stabilizing_point_x = config.stabilizing_point_x;
   params.stabilizing_point_y = config.stabilizing_point_y;
   params.choose_foot_corridor_width = config.choose_foot_corridor_width;
+  params.move_trunk_time = config.move_trunk_time;
+  params.velocity = config.velocity;
   engine_.setParams(params);
 
   stabilizer_.useCop(config.use_center_of_pressure);
@@ -198,7 +193,7 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
 
     publishSupportFoot(engine_.isLeftKick());
 
-    if (feedback.percent_done == 100) {
+    if (feedback.percent_done >= 100) {
       break;
     }
 
