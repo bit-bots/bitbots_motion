@@ -2,30 +2,25 @@
 
 # Distances and positions
 engine_rate: 100
-foot_rise: 0.0675
+foot_rise: 0.13
 foot_distance: 0.18
 kick_windup_distance: 0.2
 trunk_height: 0.4
-trunk_roll: 0.474
-trunk_pitch: -0.117
+trunk_roll: 0.08
+trunk_pitch: 0.0
 trunk_yaw: -0.111
 
 # Timings
-move_trunk_time: 1.628
-raise_foot_time: 0.424
-move_to_ball_time: 0.819
-kick_time: 0.0386
-move_back_time: 0.486
-lower_foot_time: 0.310
-move_trunk_back_time: 0.465
+move_trunk_time: 0.7
+velocity: 1.4
 
 # Decisions
 choose_foot_corridor_width: 0.4
 
 ### Stabilizer ###
 use_center_of_pressure: false
-stabilizing_point_x: 0.018
-stabilizing_point_y: -0.0412
+stabilizing_point_x: 0.019
+stabilizing_point_y: -0.05
 
 pid_x/p: 1
 pid_y/p: 1
