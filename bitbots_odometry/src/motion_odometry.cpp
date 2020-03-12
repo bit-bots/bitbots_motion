@@ -122,7 +122,12 @@ void MotionOdometry::supportCallback(const std_msgs::Char msg) {
 
   // remember if we recieved first support state, only remember left or right
   if (previous_support_state_ == 'n' && current_support_state_ != 'd') {
-    previous_support_state_ = current_support_state_;
+    if(current_support_state_ == 'l'){
+      previous_support_state_ = 'r';
+    }else{
+      previous_support_state_ = 'l';
+    }
+
   }
 }
 
