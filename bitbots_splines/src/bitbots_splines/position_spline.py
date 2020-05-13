@@ -5,7 +5,7 @@ from bitbots_splines.smooth_spline import SmoothSpline, SplinePart, Point
 class position_spline():
     def __init__(self, dimensions=6):
         self.splines = []
-        for _ in range(self.dimensions):
+        for _ in range(dimensions):
             self.splines.append(SmoothSpline())
 
     def add_point(self, dimension, time, position, velocity=0, acceleration=0):
