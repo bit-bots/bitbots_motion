@@ -4,7 +4,6 @@ from bitbots_splines.smooth_spline import SmoothSpline, SplinePart, Point
 
 class position_spline():
     def __init__(self, dimensions=6):
-        self.dimensions = dimensions
         self.splines = []
         for _ in range(self.dimensions):
             self.splines.append(SmoothSpline())
@@ -21,3 +20,27 @@ class position_spline():
     def compute_splines(self):
         for spline in self.splines:
             spline.compute_spline()
+
+    def get_pos(self, t):
+        pos = []
+        for spline in self.splines:
+            pos.append(spline.pos(t))
+        return pos
+
+    def get_vel(self, t):
+        vel = []
+        for spline in self.splines:
+            vel.append(spline.vel(t))
+        return vel
+
+    def get_acc(self, t):
+        acc = []
+        for spline in self.splines:
+            acc.append(spline.acc(t))
+        return acc
+
+    def get_jerk(self, t):
+        jerk = []
+        for spline in self.splines:
+            jerk.append(spline.jerk(t))
+        return jerk
