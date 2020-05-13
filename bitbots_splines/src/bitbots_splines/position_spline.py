@@ -2,7 +2,7 @@ from bitbots_splines.polynom import Polynom, pos, vel, acc, jerk
 from bitbots_splines.smooth_spline import SmoothSpline, SplinePart, Point
 
 
-class position_spline():
+class PositionSpline():
     def __init__(self, dimensions=6):
         self.splines = []
         for _ in range(dimensions):
