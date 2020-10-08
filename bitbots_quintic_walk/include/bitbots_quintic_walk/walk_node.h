@@ -176,6 +176,9 @@ class WalkNode {
   nav_msgs::Odometry odom_msg_;
   geometry_msgs::TransformStamped odom_trans_;
 
+  geometry_msgs::PointStamped cop_l_;
+  geometry_msgs::PointStamped cop_r_;
+
   ros::NodeHandle nh_;
 
   ros::Publisher pub_controller_command_;
@@ -190,6 +193,8 @@ class WalkNode {
   ros::Subscriber imu_sub_;
   ros::Subscriber pressure_sub_left_;
   ros::Subscriber pressure_sub_right_;
+  ros::Subscriber cop_l_sub_;
+  ros::Subscriber cop_r_sub_;
 
   dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> *dyn_reconf_server_;
 
@@ -202,14 +207,27 @@ class WalkNode {
   WalkIK ik_;
   WalkVisualizer visualizer_;
 
+  double current_trunk_pitch_;
+  double current_trunk_roll_;
   double current_trunk_fused_pitch_;
   double current_trunk_fused_roll_;
 
+  double cop_left_x_;
+  double cop_left_y_;
+  double cop_right_x_;
+  double cop_right_y_;
   double current_fly_pressure_;
   double current_fly_effort_;
 
   double roll_vel_;
   double pitch_vel_;
+
+  control_toolbox::Pid pid_left_x_;
+  control_toolbox::Pid pid_left_y_;
+  control_toolbox::Pid pid_right_x_;
+  control_toolbox::Pid pid_right_y_;
+  control_toolbox::Pid pid_hip_pitch_;
+  control_toolbox::Pid pid_hip_roll_;
 };
 
 } // namespace bitbots_quintic_walk
