@@ -78,12 +78,18 @@ WalkNode::WalkNode(const std::string ns) :
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
-  pid_left_x_.init(ros::NodeHandle("/walking/pid_ankle_left_pitch"), false);
-  pid_left_y_.init(ros::NodeHandle("/walking/pid_ankle_left_roll"), false);
-  pid_right_x_.init(ros::NodeHandle("/walking/pid_ankle_right_pitch"), false);
-  pid_right_y_.init(ros::NodeHandle("/walking/pid_ankle_right_roll"), false);
-  pid_hip_pitch_.init(ros::NodeHandle("/walking/pid_hip_pitch"), false);
-  pid_hip_roll_.init(ros::NodeHandle("/walking/pid_hip_roll"), false);
+  pid_foot_pos_x_.init(ros::NodeHandle(ns +"/walking/pid_foot_pos_x"), false);
+  pid_foot_pos_y_.init(ros::NodeHandle(ns +"/walking/pid_foot_pos_y"), false);
+
+  pid_left_x_.init(ros::NodeHandle(ns +"/walking/pid_ankle_left_pitch"), false);
+  pid_left_y_.init(ros::NodeHandle(ns +"/walking/pid_ankle_left_roll"), false);
+  pid_right_x_.init(ros::NodeHandle(ns +"/walking/pid_ankle_right_pitch"), false);
+  pid_right_y_.init(ros::NodeHandle(ns +"/walking/pid_ankle_right_roll"), false);
+  pid_hip_pitch_.init(ros::NodeHandle(ns +"/walking/pid_hip_pitch"), false);
+  pid_hip_roll_.init(ros::NodeHandle(ns +"/walking/pid_hip_roll"), false);
+
+  pid_foot_pos_x_.reset();
+  pid_foot_pos_y_.reset();
 
   pid_left_x_.reset();
   pid_left_y_.reset();
@@ -109,6 +115,9 @@ void WalkNode::run() {
       // the robot fell, we have to reset everything and do nothing else
       walk_engine_.reset();
 
+      pid_foot_pos_x_.reset();
+      pid_foot_pos_y_.reset();
+
       pid_left_x_.reset();
       pid_left_y_.reset();
       pid_right_x_.reset();
@@ -125,6 +134,11 @@ void WalkNode::run() {
       current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLLABLE ||
           robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
           robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+
+      // PID control on foot position
+      current_request_.linear_orders[0] += pid_foot_pos_x_.computeCommand(current_trunk_fused_pitch_, ros::Duration(dt));
+      current_request_.linear_orders[1] += pid_foot_pos_y_.computeCommand(current_trunk_fused_roll_, ros::Duration(dt));
+
       // update walk engine response
       walk_engine_.setGoals(current_request_);
       checkPhaseRestAndReset();

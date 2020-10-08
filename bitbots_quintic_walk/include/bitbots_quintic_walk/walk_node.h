@@ -222,6 +222,9 @@ class WalkNode {
   double roll_vel_;
   double pitch_vel_;
 
+  control_toolbox::Pid pid_foot_pos_x_;
+  control_toolbox::Pid pid_foot_pos_y_;
+
   control_toolbox::Pid pid_left_x_;
   control_toolbox::Pid pid_left_y_;
   control_toolbox::Pid pid_right_x_;

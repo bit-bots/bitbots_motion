@@ -6,12 +6,12 @@ WalkStabilizer::WalkStabilizer(const std::string ns) {
   pid_trunk_fused_pitch_.init(ros::NodeHandle(ns + "/walking/pid_trunk_fused_pitch"), false);
   pid_trunk_fused_roll_.init(ros::NodeHandle(ns + "/walking/pid_trunk_fused_roll"), false);
 
-  pid_trunk_pitch_.init(ros::NodeHandle("/walking/pid_trunk_pitch"), false);
-  pid_trunk_roll_.init(ros::NodeHandle("/walking/pid_trunk_roll"), false);
-  pid_trunk_roll_vel_.init(ros::NodeHandle("/walking/pid_trunk_gyro_roll"), false);
-  pid_trunk_pitch_vel_.init(ros::NodeHandle("/walking/pid_trunk_gyro_pitch"), false);
-  pid_cop_x_.init(ros::NodeHandle("/walking/pid_cop_x"), false);
-  pid_cop_y_.init(ros::NodeHandle("/walking/pid_cop_y"), false);
+  pid_trunk_pitch_.init(ros::NodeHandle(ns + "/walking/pid_trunk_pitch"), false);
+  pid_trunk_roll_.init(ros::NodeHandle(ns + "/walking/pid_trunk_roll"), false);
+  pid_trunk_roll_vel_.init(ros::NodeHandle(ns + "/walking/pid_trunk_gyro_roll"), false);
+  pid_trunk_pitch_vel_.init(ros::NodeHandle(ns + "/walking/pid_trunk_gyro_pitch"), false);
+  pid_cop_x_.init(ros::NodeHandle(ns + "/walking/pid_cop_x"), false);
+  pid_cop_y_.init(ros::NodeHandle(ns + "/walking/pid_cop_y"), false);
 
   reset();
 }
