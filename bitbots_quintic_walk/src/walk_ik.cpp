@@ -41,17 +41,21 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
 
   // we have to do this otherwise there is an error
   goal_state_->updateLinkTransforms();
+  kinematics::KinematicsQueryOptions options = kinematics::KinematicsQueryOptions();
+  options.return_approximate_solution = true;
 
   success = goal_state_->setFromIK(left_leg_joints_group_,
                                    left_foot_goal_msg,
                                    ik_timeout_,
-                                   moveit::core::GroupStateValidityCallbackFn());
+                                   moveit::core::GroupStateValidityCallbackFn(),
+                                   options);
   goal_state_->updateLinkTransforms();
 
   success &= goal_state_->setFromIK(right_leg_joints_group_,
                                     right_foot_goal_msg,
                                     ik_timeout_,
-                                    moveit::core::GroupStateValidityCallbackFn());
+                                    moveit::core::GroupStateValidityCallbackFn(),
+                                    options);
 
   std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
   std::vector<double> joint_goals;
