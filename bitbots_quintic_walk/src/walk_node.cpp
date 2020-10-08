@@ -135,12 +135,17 @@ void WalkNode::run() {
           robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
           robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
 
-      // PID control on foot position
-      current_request_.linear_orders[0] += pid_foot_pos_x_.computeCommand(current_trunk_fused_pitch_, ros::Duration(dt));
-      current_request_.linear_orders[1] += pid_foot_pos_y_.computeCommand(current_trunk_fused_roll_, ros::Duration(dt));
+      // PID control on foot position. take previous goal orientation and compute difference with actual orientation
+      Eigen::Quaterniond goal_orientation_eigen;
+      tf2::convert(response.support_foot_to_trunk.getRotation(), goal_orientation_eigen);
+      rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
+      WalkRequest request(current_request_);
+      request.linear_orders[0] += pid_foot_pos_x_.computeCommand(goal_fused.fusedPitch - current_trunk_fused_pitch_, ros::Duration(dt));
+      request.linear_orders[1] += pid_foot_pos_y_.computeCommand(goal_fused.fusedRoll - current_trunk_fused_roll_, ros::Duration(dt));
+
 
       // update walk engine response
-      walk_engine_.setGoals(current_request_);
+      walk_engine_.setGoals(request);
       checkPhaseRestAndReset();
       response = walk_engine_.update(dt);
       visualizer_.publishEngineDebug(response);

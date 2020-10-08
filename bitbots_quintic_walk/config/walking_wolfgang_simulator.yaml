@@ -72,9 +72,11 @@ walking:
     first_step_swing_factor: 1.0
     first_step_trunk_phase: 0.0
 
+    trunk_z_movement: 0.0
+
   node:
     # update frequency of the engine
-    engine_freq: 1000.0
+    engine_freq: 240.0
 
     # parameters for bioIK
     ik_timeout: 0.01
@@ -104,12 +106,162 @@ walking:
     ground_min_pressure: 1.5
     phase_reset_phase: 0.25
     joint_min_effort: 35
-    effort_phase_reset_active: True
+    effort_phase_reset_active: False
 
     publish_odom_tf: False
 
-  pid_trunk:
-    p: 1
+  pid_trunk_pitch:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_trunk_roll:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_trunk_fused_pitch:
+    p: 0.0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_trunk_fused_roll:
+    p: 0.0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_trunk_gyro_roll:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_trunk_gyro_pitch:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_cop_x:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_cop_y:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_ankle_left_pitch:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_ankle_right_pitch:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_ankle_left_roll:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_ankle_right_roll:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_hip_pitch:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_hip_roll:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_foot_pos_x:
+    p: 0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_foot_pos_y:
+    p: 0
     i: 0
     d: 0
     i_clamp: 0
