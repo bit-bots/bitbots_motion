@@ -1,16 +1,32 @@
 walking:
   engine:
+    double_support_ratio: 0.314697640833062
+    foot_distance: 0.143363192277036
+    freq: 2.98253362650837
+    trunk_height: 0.390266316016889
+    trunk_phase: -0.0788361179838769
+    trunk_pitch: -0.0191702889975478
+    trunk_swing: 0.160990324030214
+    trunk_x_offset: -0.00760024316985898
+    trunk_x_offset_p_coef_forward: -0.149599788109239
+    trunk_x_offset_p_coef_turn: -0.0703677657468857
+    trunk_z_movement: 0.00369585180839771
+
     foot_apex_phase: 0.5
     foot_rise: 0.05
-    trunk_pitch: 0.0
     trunk_pitch_p_coef_forward: 0
     trunk_pitch_p_coef_turn: 0
     trunk_y_offset: 0
 
-
     foot_z_pause: 0.0
     trunk_pause: 0.0
     foot_put_down_phase: 1.0
+
+    foot_overshoot_phase: 1
+    foot_overshoot_ration: 0.0
+
+    first_step_swing_factor: 1
+    first_step_trunk_phase: 0.5
 
     kick_length: 0.09
     kick_vel: 0.2

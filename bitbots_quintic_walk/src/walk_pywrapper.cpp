@@ -197,8 +197,6 @@ void PyWalkWrapper::set_node_dyn_reconf(const boost::python::object params) {
       dyn_conf.pressure_phase_reset_active = string2bool(valstr);
     } else if (keystr == "ground_min_pressure") {
       dyn_conf.ground_min_pressure = std::stof(valstr);
-    } else if (keystr == "phase_reset_phase") {
-      dyn_conf.phase_reset_phase = std::stof(valstr);
     } else if (keystr == "joint_min_effort") {
       dyn_conf.joint_min_effort = std::stof(valstr);
     } else if (keystr == "effort_phase_reset_active") {

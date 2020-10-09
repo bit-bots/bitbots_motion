@@ -133,7 +133,6 @@ class WalkNode {
 
   bool pressure_phase_reset_active_;
   bool effort_phase_reset_active_;
-  double phase_reset_phase_;
   double ground_min_pressure_;
   double joint_min_effort_;
   bool cop_stop_active_;
