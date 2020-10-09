@@ -35,9 +35,14 @@ std::string to_python(const M &msg) {
   return str_msg;
 }
 
-void init_ros() {
-  std::map<std::string, std::string> empty;
-  ros::init(empty, "walking", ros::init_options::AnonymousName);
+void init_ros(std::string ns) {
+  // remap clock
+  std::map<std::string, std::string> remap = {{"/clock", "/" + ns + "clock"}};
+  ros::init(remap, "walking", ros::init_options::AnonymousName);
+}
+
+void spin_once(){
+  ros::spinOnce();
 }
 
 PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
@@ -254,4 +259,5 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
         .def("get_freq", &PyWalkWrapper::get_freq);
 
         def("init_ros", &init_ros);
+        def("spin_once", &spin_once);
     }

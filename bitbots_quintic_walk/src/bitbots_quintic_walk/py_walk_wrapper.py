@@ -3,7 +3,7 @@ from io import BytesIO
 import rospy
 from std_msgs.msg import Int64
 
-from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper, init_ros
+from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper, init_ros, spin_once
 from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose
 from sensor_msgs.msg import Imu, JointState
@@ -12,11 +12,14 @@ from std_msgs.msg import String
 
 class PyWalk(object):
     def __init__(self, namespace=""):
-        init_ros()
         # make namespace end with a /
         if namespace != "" and namespace[-1] != '/':
             namespace = namespace + "/"
+        init_ros(namespace)
         self.py_walk_wrapper = PyWalkWrapper(namespace)
+
+    def spin_ros(self):
+        spin_once()
 
     def _to_cpp(self, msg):
         """Return a serialized string from a ROS message
