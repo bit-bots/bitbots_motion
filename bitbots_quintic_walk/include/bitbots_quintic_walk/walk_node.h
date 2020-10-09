@@ -54,6 +54,7 @@ namespace bitbots_quintic_walk {
 class WalkNode {
  public:
   WalkNode(const std::string ns);
+  bitbots_msgs::JointCommand step(double dt);
   bitbots_msgs::JointCommand step(
       double dt,
       const geometry_msgs::Twist &cmdvel_msg,
@@ -97,8 +98,6 @@ class WalkNode {
   WalkEngine *getEngine();
 
  private:
-  void publishGoals(const bitbots_splines::JointGoals &goals);
-
   void publishOdometry(WalkResponse response);
 
   void cmdVelCb(geometry_msgs::Twist msg);
@@ -116,11 +115,6 @@ class WalkNode {
   void copLeftCb(geometry_msgs::PointStamped msg);
 
   void copRightCb(geometry_msgs::PointStamped msg);
-
-  /**
-   * This method computes the next motor goals and publishes them.
-   */
-  void calculateAndPublishJointGoals(const WalkResponse &response, double dt);
 
   double getTimeDelta();
 
@@ -157,6 +151,10 @@ class WalkNode {
   int robot_state_;
 
   char current_support_foot_;
+
+  WalkResponse current_response_;
+  WalkResponse current_stabilized_response_;
+  bitbots_splines::JointGoals motor_goals_;
 
   bitbots_quintic_walk_paramsConfig params_;
 

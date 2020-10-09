@@ -78,15 +78,15 @@ WalkNode::WalkNode(const std::string ns) :
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
-  pid_foot_pos_x_.init(ros::NodeHandle(ns +"/walking/pid_foot_pos_x"), false);
-  pid_foot_pos_y_.init(ros::NodeHandle(ns +"/walking/pid_foot_pos_y"), false);
+  pid_foot_pos_x_.init(ros::NodeHandle(ns + "/walking/pid_foot_pos_x"), false);
+  pid_foot_pos_y_.init(ros::NodeHandle(ns + "/walking/pid_foot_pos_y"), false);
 
-  pid_left_x_.init(ros::NodeHandle(ns +"/walking/pid_ankle_left_pitch"), false);
-  pid_left_y_.init(ros::NodeHandle(ns +"/walking/pid_ankle_left_roll"), false);
-  pid_right_x_.init(ros::NodeHandle(ns +"/walking/pid_ankle_right_pitch"), false);
-  pid_right_y_.init(ros::NodeHandle(ns +"/walking/pid_ankle_right_roll"), false);
-  pid_hip_pitch_.init(ros::NodeHandle(ns +"/walking/pid_hip_pitch"), false);
-  pid_hip_roll_.init(ros::NodeHandle(ns +"/walking/pid_hip_roll"), false);
+  pid_left_x_.init(ros::NodeHandle(ns + "/walking/pid_ankle_left_pitch"), false);
+  pid_left_y_.init(ros::NodeHandle(ns + "/walking/pid_ankle_left_roll"), false);
+  pid_right_x_.init(ros::NodeHandle(ns + "/walking/pid_ankle_right_pitch"), false);
+  pid_right_y_.init(ros::NodeHandle(ns + "/walking/pid_ankle_right_roll"), false);
+  pid_hip_pitch_.init(ros::NodeHandle(ns + "/walking/pid_hip_pitch"), false);
+  pid_hip_roll_.init(ros::NodeHandle(ns + "/walking/pid_hip_roll"), false);
 
   pid_foot_pos_x_.reset();
   pid_foot_pos_y_.reset();
@@ -104,7 +104,6 @@ WalkNode::WalkNode(const std::string ns) :
 
 void WalkNode::run() {
   int odom_counter = 0;
-  WalkResponse response;
   walk_engine_.reset();
 
   while (ros::ok()) {
@@ -135,110 +134,135 @@ void WalkNode::run() {
           robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
           robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
 
-      // PID control on foot position. take previous goal orientation and compute difference with actual orientation
-      Eigen::Quaterniond goal_orientation_eigen;
-      tf2::convert(response.support_foot_to_trunk.getRotation(), goal_orientation_eigen);
-      rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
-      WalkRequest request(current_request_);
-      request.linear_orders[0] += pid_foot_pos_x_.computeCommand(goal_fused.fusedPitch - current_trunk_fused_pitch_, ros::Duration(dt));
-      request.linear_orders[1] += pid_foot_pos_y_.computeCommand(goal_fused.fusedRoll - current_trunk_fused_roll_, ros::Duration(dt));
+      // perform all the actual calculations
+      bitbots_msgs::JointCommand joint_goals = step(dt);
 
-
-      // update walk engine response
-      walk_engine_.setGoals(request);
-      checkPhaseRestAndReset();
-      response = walk_engine_.update(dt);
-      visualizer_.publishEngineDebug(response);
-
-      // only calculate joint goals from this if the engine is not idle
+      // only publish goals if we are not idle
       if (walk_engine_.getState() != WalkState::IDLE) {
-        response.current_fused_roll = current_trunk_fused_roll_;
-        response.current_fused_pitch = current_trunk_fused_pitch_;
+        pub_controller_command_.publish(joint_goals);
 
-        response.current_pitch = current_trunk_pitch_;
-        response.current_roll = current_trunk_roll_;
-        response.roll_vel = roll_vel_;
-        response.pitch_vel = pitch_vel_;
-        if (walk_engine_.isLeftSupport()) {
-          response.sup_cop_x = cop_left_x_;
-          response.sup_cop_y = cop_left_y_;
+        // publish current support state
+        std_msgs::Char support_state;
+        if (walk_engine_.isDoubleSupport()) {
+          support_state.data = 'd';
+        } else if (walk_engine_.isLeftSupport()) {
+          support_state.data = 'l';
         } else {
-          response.sup_cop_x = cop_right_x_;
-          response.sup_cop_y = cop_right_y_;
+          support_state.data = 'r';
+        }
+        // publish if foot changed
+        if (current_support_foot_ != support_state.data) {
+          pub_support_.publish(support_state);
+          current_support_foot_ = support_state.data;
         }
 
-        calculateAndPublishJointGoals(response, dt);
+        // publish debug information
+        if (debug_active_) {
+          visualizer_.publishIKDebug(current_stabilized_response_, current_state_, motor_goals_);
+          visualizer_.publishWalkMarkers(current_stabilized_response_);
+          visualizer_.publishEngineDebug(current_response_);
+        }
       }
-    }
 
-    // publish odometry
-    odom_counter++;
-    if (odom_counter > odom_pub_factor_) {
-      publishOdometry(response);
-      odom_counter = 0;
-    }
+      // publish odometry
+      odom_counter++;
+      if (odom_counter > odom_pub_factor_) {
+        publishOdometry(current_response_);
+        odom_counter = 0;
+      }
 
-    ros::spinOnce();
-    loop_rate.sleep();
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
   }
 }
 
-void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, double dt) {
-  // get bioIk goals from stabilizer
-  WalkResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
+bitbots_msgs::JointCommand WalkNode::step(double dt) {
+  // PID control on foot position. take previous goal orientation and compute difference with actual orientation
+  Eigen::Quaterniond goal_orientation_eigen;
+  tf2::convert(current_response_.support_foot_to_trunk.getRotation(), goal_orientation_eigen);
+  rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
+  WalkRequest request(current_request_);
+  request.linear_orders[0] +=
+      pid_foot_pos_x_.computeCommand(goal_fused.fusedPitch - current_trunk_fused_pitch_, ros::Duration(dt));
+  request.linear_orders[1] +=
+      pid_foot_pos_y_.computeCommand(goal_fused.fusedRoll - current_trunk_fused_roll_, ros::Duration(dt));
+
+  // update walk engine response
+  walk_engine_.setGoals(request);
+  checkPhaseRestAndReset();
+  current_response_ = walk_engine_.update(dt);
+
+  // only calculate joint goals from this if the engine is not idle
+  current_response_.current_fused_roll = current_trunk_fused_roll_;
+  current_response_.current_fused_pitch = current_trunk_fused_pitch_;
+
+  current_response_.current_pitch = current_trunk_pitch_;
+  current_response_.current_roll = current_trunk_roll_;
+  current_response_.roll_vel = roll_vel_;
+  current_response_.pitch_vel = pitch_vel_;
+  if (walk_engine_.isLeftSupport()) {
+    current_response_.sup_cop_x = cop_left_x_;
+    current_response_.sup_cop_y = cop_left_y_;
+  } else {
+    current_response_.sup_cop_x = cop_right_x_;
+    current_response_.sup_cop_y = cop_right_y_;
+  }
+
+  // get stabilized goals from stabilizer
+  current_stabilized_response_ = stabilizer_.stabilize(current_response_, ros::Duration(dt));
 
   // compute motor goals from IK
-  bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_response);
+  motor_goals_ = ik_.calculate(current_stabilized_response_);
 
   double goal_pitch, goal_roll, goal_yaw;
-  tf2::Matrix3x3(stabilized_response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
-  double hip_pitch_correction = pid_hip_pitch_.computeCommand(goal_pitch - response.current_pitch, ros::Duration(dt));
-  double hip_roll_correction = pid_hip_roll_.computeCommand(goal_roll - response.current_roll, ros::Duration(dt));
+  tf2::Matrix3x3(current_stabilized_response_.support_foot_to_trunk.getRotation())
+      .getRPY(goal_roll, goal_pitch, goal_yaw);
+  double hip_pitch_correction =
+      pid_hip_pitch_.computeCommand(goal_pitch - current_response_.current_pitch, ros::Duration(dt));
+  double hip_roll_correction =
+      pid_hip_roll_.computeCommand(goal_roll - current_response_.current_roll, ros::Duration(dt));
 
-  for (int i = 0; i < motor_goals.first.size(); ++i) {
-    if (motor_goals.first.at(i) == "LAnklePitch") {
-      motor_goals.second.at(i) += pid_left_x_.computeCommand(cop_left_x_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "RAnklePitch") {
-      motor_goals.second.at(i) += pid_right_x_.computeCommand(cop_right_x_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "LAnkleRoll") {
-      motor_goals.second.at(i) += pid_left_y_.computeCommand(cop_left_y_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "RAnkleRoll") {
-      motor_goals.second.at(i) += pid_right_y_.computeCommand(cop_right_y_, ros::Duration(dt));
-    } else if (motor_goals.first.at(i) == "RHipPitch"){
+  for (int i = 0; i < motor_goals_.first.size(); ++i) {
+    if (motor_goals_.first.at(i) == "LAnklePitch") {
+      motor_goals_.second.at(i) += pid_left_x_.computeCommand(cop_left_x_, ros::Duration(dt));
+    } else if (motor_goals_.first.at(i) == "RAnklePitch") {
+      motor_goals_.second.at(i) += pid_right_x_.computeCommand(cop_right_x_, ros::Duration(dt));
+    } else if (motor_goals_.first.at(i) == "LAnkleRoll") {
+      motor_goals_.second.at(i) += pid_left_y_.computeCommand(cop_left_y_, ros::Duration(dt));
+    } else if (motor_goals_.first.at(i) == "RAnkleRoll") {
+      motor_goals_.second.at(i) += pid_right_y_.computeCommand(cop_right_y_, ros::Duration(dt));
+    } else if (motor_goals_.first.at(i) == "RHipPitch") {
       // pitch servos have inverted sign, therefore substract
-      motor_goals.second.at(i) -= hip_pitch_correction;
-    } else if(motor_goals.first.at(i) == "LHipPitch") {
-      motor_goals.second.at(i) += hip_pitch_correction;
-    } else if (motor_goals.first.at(i) == "LHipRoll" || motor_goals.first.at(i) == "RHipRoll") {
-      motor_goals.second.at(i) += hip_roll_correction;
+      motor_goals_.second.at(i) -= hip_pitch_correction;
+    } else if (motor_goals_.first.at(i) == "LHipPitch") {
+      motor_goals_.second.at(i) += hip_pitch_correction;
+    } else if (motor_goals_.first.at(i) == "LHipRoll" || motor_goals_.first.at(i) == "RHipRoll") {
+      motor_goals_.second.at(i) += hip_roll_correction;
     }
   }
+  // change to joint command message type
+  bitbots_msgs::JointCommand command;
+  command.header.stamp = ros::Time::now();
 
-  // publish them
-  publishGoals(motor_goals);
+  /*
+   * Since our JointGoals type is a vector of strings
+   *  combined with a vector of numbers (motor name -> target position)
+   *  and bitbots_msgs::JointCommand needs both vectors as well,
+   *  we can just assign them
+   */
+  command.joint_names = motor_goals_.first;
+  command.positions = motor_goals_.second;
 
-  // publish current support state
-  std_msgs::Char support_state;
-  if (walk_engine_.isDoubleSupport()) {
-    support_state.data = 'd';
-  } else if (walk_engine_.isLeftSupport()) {
-    support_state.data = 'l';
-  } else {
-    support_state.data = 'r';
-  }
+  /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
+  std::vector<double> vels(motor_goals_.first.size(), -1.0);
+  std::vector<double> accs(motor_goals_.first.size(), -1.0);
+  std::vector<double> pwms(motor_goals_.first.size(), -1.0);
+  command.velocities = vels;
+  command.accelerations = accs;
+  command.max_currents = pwms;
 
-  // publish if foot changed
-  if (current_support_foot_ != support_state.data) {
-    pub_support_.publish(support_state);
-    current_support_foot_ = support_state.data;
-  }
-
-
-  // publish debug information
-  if (debug_active_) {
-    visualizer_.publishIKDebug(stabilized_response, current_state_, motor_goals);
-    visualizer_.publishWalkMarkers(stabilized_response);
-  }
+  return command;
 }
 
 double WalkNode::getTimeDelta() {
@@ -271,58 +295,17 @@ bitbots_msgs::JointCommand WalkNode::step(double dt,
                                           const sensor_msgs::JointState &jointstate_msg,
                                           const bitbots_msgs::FootPressure &pressure_left,
                                           const bitbots_msgs::FootPressure &pressure_right) {
+  // method for python interface. take all messages as parameters instead of using ROS
   cmdVelCb(cmdvel_msg);
   imuCb(imu_msg);
   jointStateCb(jointstate_msg);
   pressureLeftCb(pressure_left);
   pressureRightCb(pressure_right);
-
-  WalkResponse response;
-
-  // PID control on foot position. take previous goal orientation and compute difference with actual orientation
-  Eigen::Quaterniond goal_orientation_eigen;
-  tf2::convert(response.support_foot_to_trunk.getRotation(), goal_orientation_eigen);
-  rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
-  WalkRequest request(current_request_);
-  request.linear_orders[0] += pid_foot_pos_x_.computeCommand(goal_fused.fusedPitch - current_trunk_fused_pitch_, ros::Duration(dt));
-  request.linear_orders[1] += pid_foot_pos_y_.computeCommand(goal_fused.fusedRoll - current_trunk_fused_roll_, ros::Duration(dt));
-
   // we don't want to walk, even if we have orders, if we are not in the right state
   current_request_.walkable_state = true;
   // update walk engine response
-  walk_engine_.setGoals(current_request_);
-  checkPhaseRestAndReset();
-  response = walk_engine_.update(dt);
-  visualizer_.publishEngineDebug(response);
-
-  response.current_fused_roll = current_trunk_fused_roll_;
-  response.current_fused_pitch = current_trunk_fused_pitch_;
-  // get bioIk goals from stabilizer
-  WalkResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
-
-  // compute motor goals from IK
-  bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
-  /* Construct JointCommand message */
-  bitbots_msgs::JointCommand command;
-
-  /*
-  * Since our JointGoals type is a vector of strings
-  *  combined with a vector of numbers (motor name -> target position)
-  *  and bitbots_msgs::JointCommand needs both vectors as well,
-  *  we can just assign them
-  */
-  command.joint_names = goals.first;
-  command.positions = goals.second;
-
-  /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
-  std::vector<double> vels(goals.first.size(), -1.0);
-  std::vector<double> accs(goals.first.size(), -1.0);
-  std::vector<double> pwms(goals.first.size(), -1.0);
-  command.velocities = vels;
-  command.accelerations = accs;
-  command.max_currents = pwms;
-  return command;
-
+  bitbots_msgs::JointCommand joint_goals = step(dt);
+  return joint_goals;
 }
 
 geometry_msgs::Pose WalkNode::get_left_foot_pose() {
@@ -552,33 +535,6 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
 
   params_.pause_duration = config.pause_duration;
   walk_engine_.setPauseDuration(params_.pause_duration);
-}
-
-// todo this is the same method as in kick, maybe put it into a utility class - Yes - still needs to be discussed
-// currently the spline package is quiet ros agnostic, this would not work with this method
-void WalkNode::publishGoals(const bitbots_splines::JointGoals &goals) {
-  /* Construct JointCommand message */
-  bitbots_msgs::JointCommand command;
-  command.header.stamp = ros::Time::now();
-
-  /*
-   * Since our JointGoals type is a vector of strings
-   *  combined with a vector of numbers (motor name -> target position)
-   *  and bitbots_msgs::JointCommand needs both vectors as well,
-   *  we can just assign them
-   */
-  command.joint_names = goals.first;
-  command.positions = goals.second;
-
-  /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
-  std::vector<double> vels(goals.first.size(), -1.0);
-  std::vector<double> accs(goals.first.size(), -1.0);
-  std::vector<double> pwms(goals.first.size(), -1.0);
-  command.velocities = vels;
-  command.accelerations = accs;
-  command.max_currents = pwms;
-
-  pub_controller_command_.publish(command);
 }
 
 void WalkNode::publishOdometry(WalkResponse response) {
