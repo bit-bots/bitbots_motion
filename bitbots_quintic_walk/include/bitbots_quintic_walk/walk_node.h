@@ -58,7 +58,9 @@ class WalkNode {
       double dt,
       const geometry_msgs::Twist &cmdvel_msg,
       const sensor_msgs::Imu &imu_msg,
-      const sensor_msgs::JointState &jointstate_msg);
+      const sensor_msgs::JointState &jointstate_msg,
+      const bitbots_msgs::FootPressure &pressure_left,
+      const bitbots_msgs::FootPressure &pressure_right);
   /**
    * Small helper method to get foot position via python wrapper
    */

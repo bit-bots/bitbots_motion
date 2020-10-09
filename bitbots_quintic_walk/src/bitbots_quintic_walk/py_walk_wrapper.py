@@ -4,11 +4,10 @@ import rospy
 from std_msgs.msg import Int64
 
 from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper, init_ros
-from bitbots_msgs.msg import JointCommand
+from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
-
 
 
 class PyWalk(object):
@@ -46,7 +45,7 @@ class PyWalk(object):
     def reset(self):
         self.py_walk_wrapper.reset()
 
-    def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg):
+    def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right):
         if dt == 0.0:
             # preventing wierd spline interpolation errors on edge case
             dt = 0.001
@@ -54,7 +53,9 @@ class PyWalk(object):
             dt,
             self._to_cpp(cmdvel_msg),
             self._to_cpp(imu_msg),
-            self._to_cpp(jointstate_msg))
+            self._to_cpp(jointstate_msg),
+            self._to_cpp(pressure_left),
+            self._to_cpp(pressure_right))
 
         result = self._from_cpp(
             stepi,

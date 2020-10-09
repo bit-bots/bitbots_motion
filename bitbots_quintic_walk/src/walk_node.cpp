@@ -268,12 +268,24 @@ void WalkNode::reset() {
 bitbots_msgs::JointCommand WalkNode::step(double dt,
                                           const geometry_msgs::Twist &cmdvel_msg,
                                           const sensor_msgs::Imu &imu_msg,
-                                          const sensor_msgs::JointState &jointstate_msg) {
+                                          const sensor_msgs::JointState &jointstate_msg,
+                                          const bitbots_msgs::FootPressure &pressure_left,
+                                          const bitbots_msgs::FootPressure &pressure_right) {
   cmdVelCb(cmdvel_msg);
   imuCb(imu_msg);
   jointStateCb(jointstate_msg);
+  pressureLeftCb(pressure_left);
+  pressureRightCb(pressure_right);
 
   WalkResponse response;
+
+  // PID control on foot position. take previous goal orientation and compute difference with actual orientation
+  Eigen::Quaterniond goal_orientation_eigen;
+  tf2::convert(response.support_foot_to_trunk.getRotation(), goal_orientation_eigen);
+  rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
+  WalkRequest request(current_request_);
+  request.linear_orders[0] += pid_foot_pos_x_.computeCommand(goal_fused.fusedPitch - current_trunk_fused_pitch_, ros::Duration(dt));
+  request.linear_orders[1] += pid_foot_pos_y_.computeCommand(goal_fused.fusedRoll - current_trunk_fused_roll_, ros::Duration(dt));
 
   // we don't want to walk, even if we have orders, if we are not in the right state
   current_request_.walkable_state = true;

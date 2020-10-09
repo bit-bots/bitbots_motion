@@ -47,13 +47,16 @@ PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared
 moveit::py_bindings_tools::ByteString PyWalkWrapper::step(double dt,
                                                           const std::string &cmdvel_msg,
                                                           const std::string &imu_msg,
-                                                          const std::string &jointstate_msg) {
-  std::string result = to_python<bitbots_msgs::JointCommand>(walk_node_->step(dt,
-                                                                              from_python<geometry_msgs::Twist>(
-                                                                                  cmdvel_msg),
-                                                                              from_python<sensor_msgs::Imu>(imu_msg),
-                                                                              from_python<sensor_msgs::JointState>(
-                                                                                  jointstate_msg)));
+                                                          const std::string &jointstate_msg,
+                                                          const std::string &pressure_left,
+                                                          const std::string &pressure_right) {
+  std::string result =
+      to_python<bitbots_msgs::JointCommand>(walk_node_->step(dt,
+                                                             from_python<geometry_msgs::Twist>(cmdvel_msg),
+                                                             from_python<sensor_msgs::Imu>(imu_msg),
+                                                             from_python<sensor_msgs::JointState>(jointstate_msg),
+                                                             from_python<bitbots_msgs::FootPressure>(pressure_left),
+                                                             from_python<bitbots_msgs::FootPressure>(pressure_right)));
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 

@@ -19,7 +19,9 @@ class PyWalkWrapper {
   moveit::py_bindings_tools::ByteString step(double dt,
                                              const std::string &cmdvel_msg,
                                              const std::string &imu_msg,
-                                             const std::string &jointstate_msg);
+                                             const std::string &jointstate_msg,
+                                             const std::string &pressure_left,
+                                             const std::string &pressure_right);
   moveit::py_bindings_tools::ByteString get_left_foot_pose();
   void reset();
   void set_robot_state(int state);
