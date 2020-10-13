@@ -50,7 +50,7 @@ class PyWalk(object):
 
     def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right):
         if dt == 0.0:
-            # preventing wierd spline interpolation errors on edge case
+            # preventing weird spline interpolation errors on edge case
             dt = 0.001
         stepi = self.py_walk_wrapper.step(
             dt,

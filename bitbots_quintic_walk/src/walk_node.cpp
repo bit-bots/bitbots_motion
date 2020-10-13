@@ -301,7 +301,7 @@ bitbots_msgs::JointCommand WalkNode::step(double dt,
   jointStateCb(jointstate_msg);
   pressureLeftCb(pressure_left);
   pressureRightCb(pressure_right);
-  // we don't want to walk, even if we have orders, if we are not in the right state
+  // we don't use external robot state
   current_request_.walkable_state = true;
   // update walk engine response
   bitbots_msgs::JointCommand joint_goals = step(dt);
