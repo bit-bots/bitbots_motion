@@ -1,4 +1,5 @@
 #include "bitbots_quintic_walk/walk_node.h"
+#include "swri_profiler/profiler.h"
 
 #include <memory>
 #include <iostream>
@@ -10,7 +11,7 @@ WalkNode::WalkNode(const std::string ns) :
     stabilizer_(ns),
     walk_engine_(ns) {
   nh_ = ros::NodeHandle(ns);
-
+  SWRI_PROFILE(ros::this_node::getName());
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLLABLE;
   current_request_.linear_orders = {0, 0, 0};
@@ -178,6 +179,7 @@ void WalkNode::run() {
 }
 
 bitbots_msgs::JointCommand WalkNode::step(double dt) {
+  SWRI_PROFILE("step");
   // PID control on foot position. take previous goal orientation and compute difference with actual orientation
   Eigen::Quaterniond goal_orientation_eigen;
   tf2::convert(current_response_.support_foot_to_trunk.getRotation(), goal_orientation_eigen);

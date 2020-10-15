@@ -1,4 +1,5 @@
 #include "bitbots_quintic_walk/walk_ik.h"
+#include "swri_profiler/profiler.h"
 
 namespace bitbots_quintic_walk {
 
@@ -43,20 +44,21 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   goal_state_->updateLinkTransforms();
   kinematics::KinematicsQueryOptions options = kinematics::KinematicsQueryOptions();
   options.return_approximate_solution = true;
+  {
+    SWRI_PROFILE("IK");
+    success = goal_state_->setFromIK(left_leg_joints_group_,
+                                     left_foot_goal_msg,
+                                     ik_timeout_,
+                                     moveit::core::GroupStateValidityCallbackFn(),
+                                     options);
+    goal_state_->updateLinkTransforms();
 
-  success = goal_state_->setFromIK(left_leg_joints_group_,
-                                   left_foot_goal_msg,
-                                   ik_timeout_,
-                                   moveit::core::GroupStateValidityCallbackFn(),
-                                   options);
-  goal_state_->updateLinkTransforms();
-
-  success &= goal_state_->setFromIK(right_leg_joints_group_,
-                                    right_foot_goal_msg,
-                                    ik_timeout_,
-                                    moveit::core::GroupStateValidityCallbackFn(),
-                                    options);
-
+    success &= goal_state_->setFromIK(right_leg_joints_group_,
+                                      right_foot_goal_msg,
+                                      ik_timeout_,
+                                      moveit::core::GroupStateValidityCallbackFn(),
+                                      options);
+  }
   std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
   std::vector<double> joint_goals;
   goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
