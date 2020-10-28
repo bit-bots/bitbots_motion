@@ -80,7 +80,7 @@ WalkResponse WalkEngine::update(double dt) {
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
     if (step_will_finish && phase_rest_active_) {
       // dont update the phase (do a phase rest) till it gets updated by a phase reset
-      ROS_WARN("PHASE REST");
+      ROS_WARN_THROTTLE(1, "PHASE REST");
       return createResponse();
     }
   }
