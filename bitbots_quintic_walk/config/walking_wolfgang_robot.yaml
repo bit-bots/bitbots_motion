@@ -158,7 +158,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-   publish_state: True
+    publish_state: True
 
   pid_trunk_gyro_pitch:
     p: 0

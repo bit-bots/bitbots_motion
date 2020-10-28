@@ -15,7 +15,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   //without this magic line, IK will not work
   const Eigen::Isometry3d &end_effector_state = goal_state_->getGlobalLinkTransform("r_sole");
 
-   ROS_WARN("IK reset deactive for experimenting with other robots. this should not be in production code");
+  ROS_WARN("IK reset deactive for experimenting with other robots. this should not be in production code");
   //reset();
 }
 
@@ -43,7 +43,7 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   // we have to do this otherwise there is an error
   goal_state_->updateLinkTransforms();
   kinematics::KinematicsQueryOptions options = kinematics::KinematicsQueryOptions();
-  options.return_approximate_solution = true;
+  options.return_approximate_solution = false;
   {
     SWRI_PROFILE("IK");
     success = goal_state_->setFromIK(left_leg_joints_group_,
