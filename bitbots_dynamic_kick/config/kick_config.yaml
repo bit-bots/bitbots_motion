@@ -2,25 +2,25 @@
 
 # Distances and positions
 engine_rate: 500
-foot_rise: 0.08
+foot_rise: 0.13
 foot_distance: 0.18
 kick_windup_distance: 0.2
 trunk_height: 0.4
-trunk_roll: 0
-trunk_pitch: 0
-trunk_yaw: 0
+trunk_roll: 0.08
+trunk_pitch: 0.0
+trunk_yaw: -0.111
 
 # Timings
-move_trunk_time: 0.2
-velocity: 1
+move_trunk_time: 0.7
+velocity: 1.4
 
 # Decisions
 choose_foot_corridor_width: 0.4
 
 ### Stabilizer ###
 use_center_of_pressure: false
-stabilizing_point_x: 0.0
-stabilizing_point_y: 0.021
+stabilizing_point_x: 0.019
+stabilizing_point_y: -0.05
 
 pid_x/p: 0.2
 pid_x/i: 0
