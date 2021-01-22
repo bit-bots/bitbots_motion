@@ -58,16 +58,18 @@ class KickNode {
   Visualizer visualizer_;
   KickIK ik_;
   int engine_rate_;
+  double last_ros_update_time_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
   robot_model_loader::RobotModelLoader robot_model_loader_;
   bool was_support_foot_published_;
+  robot_state::RobotStatePtr current_state_;
 
   /**
    * Do main loop in which KickEngine::update() gets called repeatedly.
    * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
    */
-  void loopEngine();
+  void loopEngine(ros::Rate loop_rate);
 
   /**
    * Retrieve current feet_positions in base_link frame
@@ -83,6 +85,11 @@ class KickNode {
    * @param is_left_kick Whether the left foot is the current kicking foot, meaning it is in the air
    */
   void publishSupportFoot(bool is_left_kick);
+
+  /**
+   * Helper method to achieve correctly sampled rate
+   */
+  double getTimeDelta();
 
   /**
    * Publish goals to ROS

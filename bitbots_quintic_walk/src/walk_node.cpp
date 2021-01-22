@@ -105,6 +105,11 @@ WalkNode::WalkNode(const std::string ns) :
 void WalkNode::run() {
   int odom_counter = 0;
   walk_engine_.reset();
+  WalkResponse response;
+  // publish the starting support state once, especially for odometry. we always start with the same foot
+  std_msgs::Char sup_state;
+  sup_state.data = 'l';
+  pub_support_.publish(sup_state);
 
   ros::Rate loop_rate(engine_frequency_);
   double dt;
@@ -541,7 +546,7 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
 void WalkNode::publishOdometry(WalkResponse response) {
   // odometry to trunk is transform to support foot * transform from support to trunk
   tf2::Transform support_foot_tf;
-  if (walk_engine_.isLeftSupport()) {
+  if (response.is_left_support_foot) {
     support_foot_tf = walk_engine_.getLeft();
   } else {
     support_foot_tf = walk_engine_.getRight();

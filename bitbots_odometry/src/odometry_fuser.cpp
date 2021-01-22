@@ -39,12 +39,21 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
 
   // wait for transforms from joints
   while (!tf_buffer_.canTransform("l_sole", "base_link", ros::Time(0), ros::Duration(1)) && ros::ok()) {
-    ROS_WARN_THROTTLE(30, "Wainting for transforms from robot joints");
+    ROS_WARN_THROTTLE(30, "Waiting for transforms from robot joints");
   }
 
   ros::Rate r(200.0);
+  ros::Time last_published_time;
   while (ros::ok()) {
     ros::spinOnce();
+
+    // in simulation, the time does not always advance between loop iteration
+    // in that case, we do not want to republish the transform
+    ros::Time now = ros::Time::now();
+    if (now == last_published_time) {
+      r.sleep();
+      continue;
+    }
 
     imu_delta_t = ros::Time::now() - _imu_update_time;
 
@@ -54,7 +63,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
       imu_active = false;
     }
 
-    ros::Duration odom_delta_t = ros::Time::now() - _odom_update_time;
+    ros::Duration odom_delta_t = now - _odom_update_time;
 
     bool odom_active = true;
     if (odom_delta_t.toSec() > 0.5) {
@@ -80,7 +89,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
         tf2::Transform rotation_point_in_base = getCurrentRotationPoint();
         // publish rotation point as debug
         geometry_msgs::TransformStamped rotation_point_msg;
-        rotation_point_msg.header.stamp = ros::Time::now();
+        rotation_point_msg.header.stamp = now;
         rotation_point_msg.header.frame_id = "base_link";
         rotation_point_msg.child_frame_id = "rotation";
         geometry_msgs::Transform rotation_point_transform_msg;
@@ -122,7 +131,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
       }
 
       // combine it all into a tf
-      tf.header.stamp = ros::Time::now();
+      tf.header.stamp = now;
       tf.header.frame_id = "odom";
       tf.child_frame_id = "base_link";
       geometry_msgs::Transform fused_odom_msg;
@@ -130,6 +139,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
       tf.transform = fused_odom_msg;
       br.sendTransform(tf);
 
+      last_published_time = now;
     } else {
       ROS_WARN_THROTTLE(msg_rate, "No Data received! Stop publishing...");
     }
