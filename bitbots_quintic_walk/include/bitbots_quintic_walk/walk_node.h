@@ -69,6 +69,9 @@ class WalkNode {
 
   void reset();
 
+  void specialReset(WalkState state, double phase, geometry_msgs::Twist cmd_vel);
+
+
   /**
    * This is the main loop which takes care of stopping and starting of the walking.
    * A small state machine is tracking in which state the walking is and builds the trajectories accordingly.

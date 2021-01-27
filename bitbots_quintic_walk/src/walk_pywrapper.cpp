@@ -1,7 +1,3 @@
-//
-// Created by nfiedler on 6/13/20.
-//
-
 #include "bitbots_quintic_walk/walk_pywrapper.h"
 
 /* Read a ROS message from a serialized string.
@@ -78,6 +74,31 @@ moveit::py_bindings_tools::ByteString PyWalkWrapper::get_odom() {
 
 void PyWalkWrapper::reset() {
   walk_node_->reset();
+}
+
+void PyWalkWrapper::specialReset(int state, double phase, const std::string cmd_vel){
+  bitbots_quintic_walk::WalkState walk_state;
+  if (state == 0){
+    walk_state = bitbots_quintic_walk::WalkState::PAUSED;
+  }else if(state == 1){
+    walk_state = bitbots_quintic_walk::WalkState::WALKING;
+  }else if(state == 2){
+    walk_state = bitbots_quintic_walk::WalkState::IDLE;
+  }else if(state == 3){
+    walk_state = bitbots_quintic_walk::WalkState::START_MOVEMENT;
+  }else if(state == 4){
+    walk_state = bitbots_quintic_walk::WalkState::STOP_MOVEMENT;
+  }else if(state == 5){
+    walk_state = bitbots_quintic_walk::WalkState::START_STEP;
+  }else if(state == 6){
+    walk_state = bitbots_quintic_walk::WalkState::STOP_STEP;
+  }else if(state == 7){
+    walk_state = bitbots_quintic_walk::WalkState::KICK;
+  }else{
+    ROS_WARN("state in special reset not clear");
+  }
+
+  walk_node_->specialReset(walk_state, phase, from_python<geometry_msgs::Twist>(cmd_vel));
 }
 
 float PyWalkWrapper::get_phase() {
@@ -257,6 +278,7 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
         .def("get_left_foot_pose", &PyWalkWrapper::get_left_foot_pose)
         .def("set_robot_state", &PyWalkWrapper::set_robot_state)
         .def("reset", &PyWalkWrapper::reset)
+        .def("special_reset", &PyWalkWrapper::specialReset)
         .def("set_engine_dyn_reconf",
         &PyWalkWrapper::set_engine_dyn_reconf)
         .def("set_node_dyn_reconf",

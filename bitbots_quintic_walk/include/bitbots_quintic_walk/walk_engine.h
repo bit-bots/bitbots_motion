@@ -1,5 +1,5 @@
 /*
-This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
+This code is partly based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
@@ -35,6 +35,8 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   void setGoals(const WalkRequest &goals) override;
   void reset() override;
   int getPercentDone() const override;
+
+  void specialReset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z, bool walkable_state);
 
   /**
    * Return current walk phase between 0 and 1

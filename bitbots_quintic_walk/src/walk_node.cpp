@@ -294,6 +294,13 @@ void WalkNode::reset() {
   stabilizer_.reset();
 }
 
+void WalkNode::specialReset(WalkState state, double phase, geometry_msgs::Twist cmd_vel){
+  walk_engine_.specialReset(state, phase, {cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.linear.z}, cmd_vel.angular.z,
+                            true);
+  stabilizer_.reset();
+  cmdVelCb(cmd_vel);
+}
+
 bitbots_msgs::JointCommand WalkNode::step(double dt,
                                           const geometry_msgs::Twist &cmdvel_msg,
                                           const sensor_msgs::Imu &imu_msg,

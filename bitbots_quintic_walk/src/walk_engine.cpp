@@ -230,14 +230,25 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-  request_.linear_orders = {0, 0, 0};
-  request_.angular_z = 0;
-  request_.walkable_state = false;
-  engine_state_ = WalkState::IDLE;
-  phase_ = 0.0;
+    specialReset(WalkState::IDLE, 0.0, {0,0,0},0, false);
+}
+
+void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z,
+                              bool walkable_state){
+  request_.linear_orders = linear_orders;
+  request_.angular_z = angular_z;
+  request_.walkable_state = walkable_state;
+  engine_state_ = state;
+  phase_ = phase;
   time_paused_ = 0.0;
 
-  is_left_support_foot_ = false;
+  if(phase < 0.5){
+    is_left_support_foot_ = false;
+  }else{
+    is_left_support_foot_ = true;
+  }
+
+  // reset odometry
   support_to_last_.setIdentity();
   support_to_next_.setIdentity();
   if (is_left_support_foot_) {

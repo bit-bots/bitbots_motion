@@ -12,6 +12,8 @@
 #include <iostream>
 #include <moveit/py_bindings_tools/serialize_msg.h>
 #include <bitbots_quintic_walk/bitbots_quintic_walk_engine_paramsConfig.h>
+#include "bitbots_quintic_walk/walk_utils.h"
+
 
 class PyWalkWrapper {
  public:
@@ -25,6 +27,7 @@ class PyWalkWrapper {
   moveit::py_bindings_tools::ByteString get_left_foot_pose();
   moveit::py_bindings_tools::ByteString get_odom();
   void reset();
+  void specialReset(int state, double phase, const std::string cmd_vel);
   void set_robot_state(int state);
   void set_engine_dyn_reconf(const boost::python::object params);
   void set_node_dyn_reconf(const boost::python::object params);

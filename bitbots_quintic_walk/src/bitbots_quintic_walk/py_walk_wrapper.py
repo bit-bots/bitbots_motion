@@ -10,6 +10,7 @@ from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 
+
 class PyWalk(object):
     def __init__(self, namespace=""):
         # make namespace end with a /
@@ -47,6 +48,11 @@ class PyWalk(object):
 
     def reset(self):
         self.py_walk_wrapper.reset()
+
+    def special_reset(self, state: String, phase: float, cmd_vel: Twist):
+        state_dict = {"PAUSED": 0, "WALKING": 1, "IDLE": 2, "START_MOVEMENT": 3, "STOP_MOVEMENT": 4, "START_STEP": 5,
+                      "STOP_STEP": 6, "KICK": 7}
+        self.py_walk_wrapper.specialReset(state_dict[state], phase, self._to_cpp(cmd_vel))
 
     def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right):
         if dt == 0.0:
