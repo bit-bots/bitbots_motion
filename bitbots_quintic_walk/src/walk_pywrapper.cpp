@@ -70,6 +70,12 @@ moveit::py_bindings_tools::ByteString PyWalkWrapper::get_left_foot_pose() {
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
+moveit::py_bindings_tools::ByteString PyWalkWrapper::get_odom() {
+  std::string result = to_python<nav_msgs::Odometry>(walk_node_->getOdometry());
+  return moveit::py_bindings_tools::serializeMsg(result);
+}
+
+
 void PyWalkWrapper::reset() {
   walk_node_->reset();
 }
@@ -256,7 +262,8 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
         .def("set_node_dyn_reconf",
         &PyWalkWrapper::set_node_dyn_reconf)
         .def("get_phase", &PyWalkWrapper::get_phase)
-        .def("get_freq", &PyWalkWrapper::get_freq);
+        .def("get_freq", &PyWalkWrapper::get_freq)
+        .def("get_odom", &PyWalkWrapper::get_odom);
 
         def("init_ros", &init_ros);
         def("spin_once", &spin_once);

@@ -23,6 +23,7 @@ class PyWalkWrapper {
                                              const std::string &pressure_left,
                                              const std::string &pressure_right);
   moveit::py_bindings_tools::ByteString get_left_foot_pose();
+  moveit::py_bindings_tools::ByteString get_odom();
   void reset();
   void set_robot_state(int state);
   void set_engine_dyn_reconf(const boost::python::object params);

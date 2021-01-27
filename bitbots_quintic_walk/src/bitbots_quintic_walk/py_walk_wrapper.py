@@ -8,7 +8,7 @@ from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
-
+from nav_msgs.msg import Odometry
 
 class PyWalk(object):
     def __init__(self, namespace=""):
@@ -83,3 +83,8 @@ class PyWalk(object):
 
     def get_freq(self):
         return self.py_walk_wrapper.get_freq()
+
+    def get_odom(self):
+        odom = self.py_walk_wrapper.get_odom()
+        result = self._from_cpp(odom, Odometry)
+        return result

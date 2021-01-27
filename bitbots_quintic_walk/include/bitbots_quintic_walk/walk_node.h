@@ -97,8 +97,10 @@ class WalkNode {
 
   WalkEngine *getEngine();
 
+  nav_msgs::Odometry getOdometry();
+
+
  private:
-  void publishOdometry(WalkResponse response);
 
   void cmdVelCb(geometry_msgs::Twist msg);
 
@@ -144,7 +146,6 @@ class WalkNode {
   double imu_pitch_vel_threshold_;
   double imu_roll_vel_threshold_;
 
-  bool publish_odom_tf_;
   int odom_pub_factor_;
   double last_ros_update_time_;
 
@@ -173,7 +174,6 @@ class WalkNode {
 
   bitbots_msgs::JointCommand command_msg_;
   nav_msgs::Odometry odom_msg_;
-  geometry_msgs::TransformStamped odom_trans_;
 
   geometry_msgs::PointStamped cop_l_;
   geometry_msgs::PointStamped cop_r_;

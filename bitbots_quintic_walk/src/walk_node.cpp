@@ -32,7 +32,6 @@ WalkNode::WalkNode(const std::string ns) :
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
   nh_.param<bool>("simulation_active", simulation_active_, false);
-  nh_.param<bool>("walking/node/publish_odom_tf", publish_odom_tf_, false);
 
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
@@ -173,7 +172,7 @@ void WalkNode::run() {
       // publish odometry
       odom_counter++;
       if (odom_counter > odom_pub_factor_) {
-        publishOdometry(current_response_);
+        pub_odometry_.publish(getOdometry());
         odom_counter = 0;
       }
 
@@ -543,16 +542,16 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   walk_engine_.setPauseDuration(params_.pause_duration);
 }
 
-void WalkNode::publishOdometry(WalkResponse response) {
+nav_msgs::Odometry WalkNode::getOdometry() {
   // odometry to trunk is transform to support foot * transform from support to trunk
   tf2::Transform support_foot_tf;
-  if (response.is_left_support_foot) {
+  if (walk_engine_.isLeftSupport()) {
     support_foot_tf = walk_engine_.getLeft();
   } else {
     support_foot_tf = walk_engine_.getRight();
   }
 
-  tf2::Transform odom_to_trunk = support_foot_tf * response.support_foot_to_trunk;
+  tf2::Transform odom_to_trunk = support_foot_tf * current_response_.support_foot_to_trunk;
   tf2::Vector3 pos = odom_to_trunk.getOrigin();
   geometry_msgs::Quaternion quat_msg;
   tf2::convert(odom_to_trunk.getRotation().normalize(), quat_msg);
@@ -576,22 +575,7 @@ void WalkNode::publishOdometry(WalkResponse response) {
   twist.angular.z = current_request_.angular_z * walk_engine_.getFreq() * 2;
 
   odom_msg_.twist.twist = twist;
-  pub_odometry_.publish(odom_msg_);
-
-  if (publish_odom_tf_) {
-    odom_trans_ = geometry_msgs::TransformStamped();
-    odom_trans_.header.stamp = current_time;
-    odom_trans_.header.frame_id = "odom";
-    odom_trans_.child_frame_id = "base_link";
-
-    odom_trans_.transform.translation.x = pos[0];
-    odom_trans_.transform.translation.y = pos[1];
-    odom_trans_.transform.translation.z = pos[2];
-    odom_trans_.transform.rotation = quat_msg;
-
-    //send the transform
-    odom_broadcaster_.sendTransform(odom_trans_);
-  }
+  return odom_msg_;
 }
 
 void WalkNode::initializeEngine() {
