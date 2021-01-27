@@ -76,7 +76,7 @@ void PyWalkWrapper::reset() {
   walk_node_->reset();
 }
 
-void PyWalkWrapper::specialReset(int state, double phase, const std::string cmd_vel){
+void PyWalkWrapper::special_reset(int state, double phase, const std::string cmd_vel){
   bitbots_quintic_walk::WalkState walk_state;
   if (state == 0){
     walk_state = bitbots_quintic_walk::WalkState::PAUSED;
@@ -278,7 +278,7 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
         .def("get_left_foot_pose", &PyWalkWrapper::get_left_foot_pose)
         .def("set_robot_state", &PyWalkWrapper::set_robot_state)
         .def("reset", &PyWalkWrapper::reset)
-        .def("special_reset", &PyWalkWrapper::specialReset)
+        .def("special_reset", &PyWalkWrapper::special_reset)
         .def("set_engine_dyn_reconf",
         &PyWalkWrapper::set_engine_dyn_reconf)
         .def("set_node_dyn_reconf",

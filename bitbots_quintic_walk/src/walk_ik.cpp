@@ -1,5 +1,5 @@
 #include "bitbots_quintic_walk/walk_ik.h"
-#include "swri_profiler/profiler.h"
+//#include "swri_profiler/profiler.h"
 
 namespace bitbots_quintic_walk {
 
@@ -45,7 +45,7 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   kinematics::KinematicsQueryOptions options = kinematics::KinematicsQueryOptions();
   options.return_approximate_solution = false;
   {
-    SWRI_PROFILE("IK");
+    //SWRI_PROFILE("IK");
     success = goal_state_->setFromIK(left_leg_joints_group_,
                                      left_foot_goal_msg,
                                      ik_timeout_,

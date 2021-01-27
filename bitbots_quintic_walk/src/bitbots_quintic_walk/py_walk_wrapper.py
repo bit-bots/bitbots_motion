@@ -49,10 +49,12 @@ class PyWalk(object):
     def reset(self):
         self.py_walk_wrapper.reset()
 
-    def special_reset(self, state: String, phase: float, cmd_vel: Twist):
+    def special_reset(self, state: String, phase: float, cmd_vel_msg: Twist):
         state_dict = {"PAUSED": 0, "WALKING": 1, "IDLE": 2, "START_MOVEMENT": 3, "STOP_MOVEMENT": 4, "START_STEP": 5,
                       "STOP_STEP": 6, "KICK": 7}
-        self.py_walk_wrapper.specialReset(state_dict[state], phase, self._to_cpp(cmd_vel))
+
+        print(state_dict[state])
+        self.py_walk_wrapper.special_reset(state_dict[state], phase, self._to_cpp(cmd_vel_msg))
 
     def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right):
         if dt == 0.0:

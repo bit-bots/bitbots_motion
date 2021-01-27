@@ -47,7 +47,7 @@ find_package(catkin REQUIRED COMPONENTS
         bitbots_msgs
         bitbots_docs
         rotconv
-        swri_profiler
+        #swri_profiler
         )
 
 find_package(Eigen3 REQUIRED)
@@ -85,7 +85,7 @@ include_directories(
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_splines message_runtime bitbots_msgs tf2 tf2_eigen tf2_geometry_msgs rotconv swri_profiler
+        CATKIN_DEPENDS humanoid_league_msgs std_msgs geometry_msgs bitbots_splines message_runtime bitbots_msgs tf2 tf2_eigen tf2_geometry_msgs rotconv #swri_profiler
         DEPENDS EIGEN3
 )
 
