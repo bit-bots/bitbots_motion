@@ -240,6 +240,7 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
   request_.walkable_state = walkable_state;
   engine_state_ = state;
   phase_ = phase;
+  last_phase_ = phase;
   time_paused_ = 0.0;
 
   if(phase < 0.5){
@@ -280,6 +281,22 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
   trunk_orientation_pos_at_last_foot_change_ = tf2::Vector3(0.0, params_.trunk_pitch, 0.0);
   trunk_orientation_vel_at_last_foot_change_.setZero();
   trunk_orientation_acc_at_foot_change_.setZero();
+
+  // we also have to build the trajectories corresponding to the state
+  if(state == WalkState::WALKING){
+    buildNormalTrajectories();
+  }else if(state == WalkState::START_MOVEMENT){
+    buildStartMovementTrajectories();
+  }else if(state == WalkState::START_STEP){
+    buildStartStepTrajectories();
+  }else if(state == WalkState::STOP_MOVEMENT){
+    buildStopMovementTrajectories();
+  }else if (state == WalkState::START_STEP){
+    buildStopStepTrajectories();
+  }else if (state == WalkState::KICK){
+    buildKickTrajectories();
+  }
+
 }
 
 void WalkEngine::saveCurrentRobotState() {
