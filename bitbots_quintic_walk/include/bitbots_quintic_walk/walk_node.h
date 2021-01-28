@@ -69,7 +69,7 @@ class WalkNode {
 
   void reset();
 
-  void specialReset(WalkState state, double phase, geometry_msgs::Twist cmd_vel);
+  void specialReset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry);
 
 
   /**

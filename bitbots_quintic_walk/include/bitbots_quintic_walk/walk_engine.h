@@ -36,7 +36,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   void reset() override;
   int getPercentDone() const override;
 
-  void specialReset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z, bool walkable_state);
+  void specialReset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z, bool walkable_state, bool reset_odometry);
 
   /**
    * Return current walk phase between 0 and 1

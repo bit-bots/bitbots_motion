@@ -294,9 +294,9 @@ void WalkNode::reset() {
   stabilizer_.reset();
 }
 
-void WalkNode::specialReset(WalkState state, double phase, geometry_msgs::Twist cmd_vel){
+void WalkNode::specialReset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry){
   walk_engine_.specialReset(state, phase, {cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.linear.z}, cmd_vel.angular.z,
-                            true);
+                            true, reset_odometry);
   stabilizer_.reset();
   cmdVelCb(cmd_vel);
 }

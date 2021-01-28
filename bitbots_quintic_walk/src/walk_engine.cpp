@@ -230,11 +230,11 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-    specialReset(WalkState::IDLE, 0.0, {0,0,0},0, false);
+    specialReset(WalkState::IDLE, 0.0, {0,0,0},0, false, false);
 }
 
 void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z,
-                              bool walkable_state){
+                              bool walkable_state, bool reset_odometry){
   request_.linear_orders = linear_orders;
   request_.angular_z = angular_z;
   request_.walkable_state = walkable_state;
@@ -248,7 +248,13 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
     is_left_support_foot_ = true;
   }
 
-  // reset odometry
+  if(reset_odometry){
+    // move left and right in world by foot distance for correct initialization
+    left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
+    right_in_world_.setOrigin(tf2::Vector3{0, -1* params_.foot_distance / 2, 0});
+  }
+
+  // reset last foot positions
   support_to_last_.setIdentity();
   support_to_next_.setIdentity();
   if (is_left_support_foot_) {
