@@ -87,8 +87,12 @@ class FallChecker(BaseEstimator):
         # Add the current element
         self.smoothing_list.append((rospy.Time.now(), result))
 
-        # Check if all results in the list are the same otherwise say we are stable
-        if reduce((lambda x, y: x if x == y else None), list(zip(*self.smoothing_list))[1]) is None:
+        # List only including the results not the whole tuples
+        results_list = list(zip(*self.smoothing_list))[1]
+
+        # Check if stable is not in the list otherwise say we are stable
+        # This smooths the output but prevents the output of stable when jittering between e.g. right and front
+        if self.STABLE in results_list:
             result = self.STABLE
 
         return result
