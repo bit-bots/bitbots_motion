@@ -1,7 +1,8 @@
 # -*- coding: utf8 -*-
-import array
 import math
 import numpy
+from functools import reduce 
+
 from sensor_msgs.msg import Imu
 import rospy
 
@@ -23,6 +24,7 @@ class FallChecker(BaseEstimator):
         self.thresh_orient_roll = thresh_orient_roll
 
         self.smoothing = smoothing
+        self.smoothing_list = []
         self.counter = 0
         self.last_result = 0
 
@@ -77,17 +79,17 @@ class FallChecker(BaseEstimator):
                 else:
                     result = self.RIGHT
 
-        if self.smoothing > 0:
-            if result == self.last_result and result != 0:
-                self.counter += 1
-                if self.counter > self.smoothing:
-                    result = result
-                else:
-                    result = self.STABLE
-            else:
-                self.counter = 0
-                result = self.STABLE
-            self.last_result = result
+        # Prune old elements from smothing history
+        self.smoothing_list = list(filter(
+            lambda x: x[0] > rospy.Time.now() - rospy.Duration(self.smoothing), 
+            self.smoothing_list))
+
+        # Add the current element
+        self.smoothing_list.append((rospy.Time.now(), result))
+
+        # Check if all results in the list are the same otherwise say we are stable
+        if reduce((lambda x, y: x if x == y else None), list(zip(*self.smoothing_list))[1]) is None:
+            result = self.STABLE
 
         return result
 
