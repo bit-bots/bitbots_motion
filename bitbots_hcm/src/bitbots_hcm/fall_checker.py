@@ -79,7 +79,7 @@ class FallChecker(BaseEstimator):
                 else:
                     result = self.RIGHT
 
-        # Prune old elements from smothing history
+        # Prune old elements from smoothing history
         self.smoothing_list = list(filter(
             lambda x: x[0] > rospy.Time.now() - rospy.Duration(self.smoothing), 
             self.smoothing_list))
