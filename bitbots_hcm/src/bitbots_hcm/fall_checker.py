@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import math
 import numpy
-from functools import reduce 
+from functools import reduce
 
 from sensor_msgs.msg import Imu
 import rospy
@@ -81,7 +81,7 @@ class FallChecker(BaseEstimator):
 
         # Prune old elements from smoothing history
         self.smoothing_list = list(filter(
-            lambda x: x[0] > rospy.Time.now() - rospy.Duration(self.smoothing), 
+            lambda x: x[0] > rospy.Time.now() - rospy.Duration(self.smoothing),
             self.smoothing_list))
 
         # Add the current element
