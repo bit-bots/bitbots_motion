@@ -123,6 +123,8 @@ class WalkNode {
 
   double getTimeDelta();
 
+  std::string odom_frame_, base_link_frame_, l_sole_frame_, r_sole_frame_;
+
   WalkRequest current_request_;
 
   bool debug_active_;
@@ -182,6 +184,7 @@ class WalkNode {
   geometry_msgs::PointStamped cop_r_;
 
   ros::NodeHandle nh_;
+  ros::NodeHandle pnh_;
 
   ros::Publisher pub_controller_command_;
   ros::Publisher pub_odometry_;

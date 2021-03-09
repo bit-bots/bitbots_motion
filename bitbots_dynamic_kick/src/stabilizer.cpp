@@ -3,8 +3,8 @@
 namespace bitbots_dynamic_kick {
 
 Stabilizer::Stabilizer() {
-  ros::NodeHandle pid_x_nh = ros::NodeHandle("/dynamic_kick/pid_x");
-  ros::NodeHandle pid_y_nh = ros::NodeHandle("/dynamic_kick/pid_y");
+  ros::NodeHandle pid_x_nh = ros::NodeHandle("dynamic_kick/pid_x");
+  ros::NodeHandle pid_y_nh = ros::NodeHandle("dynamic_kick/pid_y");
   pid_x_.init(pid_x_nh, false);
   pid_y_.init(pid_y_nh, false);
   reset();
@@ -29,13 +29,14 @@ KickPositions Stabilizer::stabilize(const KickPositions &positions, const ros::D
       cop_x = cop_left.x;
       cop_y = cop_left.y;
     }
-    cop_x_error = cop_x - positions.trunk_pose.getOrigin().getX();
-    cop_y_error = cop_y - positions.trunk_pose.getOrigin().getY();
+    cop_x_error = cop_x - positions.trunk_pose.translation().x();
+    cop_y_error = cop_y - positions.trunk_pose.translation().y();
 
     double x_correction = pid_x_.computeCommand(cop_x_error, dt);
     double y_correction = pid_y_.computeCommand(cop_y_error, dt);
 
-    stabilized_positions.trunk_pose.getOrigin() += {x_correction, y_correction, 0};
+    stabilized_positions.trunk_pose.translation().x() += x_correction;
+    stabilized_positions.trunk_pose.translation().y() += y_correction;
   }
   return stabilized_positions;
 }

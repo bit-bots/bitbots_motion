@@ -41,7 +41,7 @@ void spin_once(){
   ros::spinOnce();
 }
 
-PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
+PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>()) {
   set_robot_state(0);
 }
 

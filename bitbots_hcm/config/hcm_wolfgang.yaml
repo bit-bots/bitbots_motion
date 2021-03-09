@@ -5,7 +5,7 @@ hcm:
 
   #Pressure sensors
   pressure_timeout_duration: 0.1 # time without messages from the foot pressure sensors till error is produced [s]
-  pressure_sensors_installed: true
+  pressure_sensors_installed: True
   foot_zero_service: "set_foot_zero"
 
   # Motors
@@ -42,7 +42,7 @@ hcm:
   falling_thresh_orient_roll: 60 # > Point of no return in degrees
   falling_thresh_orient_pitch: 45 # > Point of no return in degrees
   # smoothing threshold for classifier
-  smooth_threshold: 20
+  smooth_threshold: 0.04
 
   pick_up_accel_threshold: 7
 
