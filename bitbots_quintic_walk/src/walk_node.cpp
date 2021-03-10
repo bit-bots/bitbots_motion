@@ -38,7 +38,6 @@ WalkNode::WalkNode(const std::string ns) :
   // read config
   pnh_.param<double>("engine_frequency", engine_frequency_, 100.0);
   pnh_.param<bool>("simulation_active", simulation_active_, false);
-  pnh_.param<bool>("walking/node/publish_odom_tf", publish_odom_tf_, false);
 
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
@@ -78,7 +77,7 @@ WalkNode::WalkNode(const std::string ns) :
 
   // initialize dynamic-reconfigure
   dyn_reconf_server_ =
-      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>(ros::NodeHandle("walking/node"));
+      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>(ros::NodeHandle(ns + "walking/node"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
@@ -104,7 +103,7 @@ WalkNode::WalkNode(const std::string ns) :
   pid_hip_roll_.reset();
 
   // this has to be done to prevent strange initilization bugs
-  walk_engine_ = WalkEngine();
+  walk_engine_ = WalkEngine(ns);
 }
 
 void WalkNode::run() {
@@ -604,7 +603,7 @@ WalkEngine *WalkNode::getEngine() {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "walking");
   // init node
-  bitbots_quintic_walk::WalkNode node;
+  bitbots_quintic_walk::WalkNode node("");
 
   // run the node
   node.initializeEngine();
