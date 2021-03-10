@@ -5,6 +5,7 @@ https://github.com/Rhoban/model/
 */
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
+#define M_TAU M_PI * 2
 
 #include <iostream>
 #include <string>

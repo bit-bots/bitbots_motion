@@ -934,10 +934,10 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
   tmp_diff.getOrigin()[0] = linear_orders.x();
   tmp_diff.getOrigin()[2] = linear_orders.z();
   //Add lateral foot offset
-  if (is_left_support_foot_) {
-    tmp_diff.getOrigin()[1] += params_.foot_distance;
+  if (is_left_support_foot_) { //todo are these switched?
+    tmp_diff.getOrigin()[1] = params_.foot_distance;
   } else {
-    tmp_diff.getOrigin()[1] -= params_.foot_distance;
+    tmp_diff.getOrigin()[1] = -1 * params_.foot_distance;
   }
   //Allow lateral step only on external foot
   //(internal foot will return to zero pose)
@@ -947,8 +947,7 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
       ) {
     tmp_diff.getOrigin()[1] += linear_orders.y();
   }
-  //No change in turn (in order to
-  //rotate around trunk center)
+  //No change in turn (in order to rotate around trunk center)
   tf2::Quaternion quat;
   quat.setRPY(0, 0, angular_z);
   tmp_diff.setRotation(quat);

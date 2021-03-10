@@ -339,7 +339,8 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
-  // the sideward movement only does one step per double step, therefore we need to multiply it by 2
+  // the sidewards movement only does one step per double step, since the second foot only goes back to the initial pose
+  // therefore we need to multiply it by 2
   current_request_.linear_orders = {msg.linear.x * factor, msg.linear.y * factor * 2, msg.linear.z * factor};
   current_request_.angular_z = msg.angular.z * factor;
 
