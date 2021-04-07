@@ -1,25 +1,32 @@
 walking:
   engine:
-    double_support_ratio: 0.122898149665364
-    first_step_swing_factor: 1.25516771219043
-    foot_distance: 0.180850926768754
-    foot_rise: 0.0721563056173029
-    freq: 2.5007567279965
-    trunk_height: 0.381689943860774
-    trunk_phase: -0.206780966478786
-    trunk_pitch: 0.0748425542905304
-    trunk_pitch_p_coef_forward: -0.0955888160107112
-    trunk_pitch_p_coef_turn: -1.42966197237633
-    trunk_swing: 0.0651670152575642
-    trunk_x_offset: -0.021930323512739
-    trunk_y_offset: -0.00922574213320393
-    trunk_z_movement: 0.00752048271219194
+
+    double_support_ratio: 0.439596286644122
+    first_step_swing_factor: 0.989033428831421
+    foot_distance: 0.203124574537751
+    foot_rise: 0.100411312094506
+    freq: 3.12873643742102
+    trunk_height: 0.380974551045401
+    trunk_phase: -0.19523826257412
+    trunk_pitch: -0.189314552270696
+    trunk_pitch_p_coef_forward: -2.62191997733776
+    trunk_pitch_p_coef_turn: -1.56524191969166
+    trunk_swing: 0.625021037935647
+    trunk_x_offset: 0.0073094266122581
+    trunk_y_offset: -0.00114613940636394
+    trunk_z_movement: 0.00926486218467733
+    directions_left: 1.0
+    early_termination_at: [-0.6000000000000001, 0, 0.75]
+    fall_sum: 1.0
     first_step_trunk_phase: -0.5
     foot_apex_phase: 0.5
     foot_overshoot_phase: 1
     foot_overshoot_ratio: 0.0
     foot_put_down_phase: 1
     foot_z_pause: 0
+    pose_obj: 0.24005767665296518
+    stability_obj: 0.2886200042430882
+    time_obj: 1.311999999996715
     trunk_pause: 0
 
     kick_length: 0.09
@@ -37,11 +44,11 @@ walking:
 
     trunkYOnlyInDoubleSupport: False
 
-    max_step_x: 0.1
-    max_step_y: 0.1
-    max_step_xy: 0.1
-    max_step_z: 0.05
-    max_step_angular: 1.0
+    max_step_x: 100
+    max_step_y: 100
+    max_step_xy: 100
+    max_step_z: 1000
+    max_step_angular: 1000.000
 
     vel: -1
     acc: -1
