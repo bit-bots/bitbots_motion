@@ -74,7 +74,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_trunk_roll:
     p: 0
@@ -84,7 +84,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_trunk_fused_pitch:
     p: 0.0
@@ -94,7 +94,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_trunk_fused_roll:
     p: 0.0
@@ -104,7 +104,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_trunk_gyro_roll:
     p: 0
@@ -114,7 +114,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_trunk_gyro_pitch:
     p: 0
@@ -124,7 +124,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_cop_x:
     p: 0
@@ -134,7 +134,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_cop_y:
     p: 0
@@ -144,7 +144,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_ankle_left_pitch:
     p: 0
@@ -154,7 +154,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_ankle_right_pitch:
     p: 0
@@ -164,7 +164,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_ankle_left_roll:
     p: 0
@@ -174,7 +174,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_ankle_right_roll:
     p: 0
@@ -184,7 +184,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_hip_pitch:
     p: 0
@@ -194,7 +194,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_hip_roll:
     p: 0
@@ -204,7 +204,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_foot_pos_x:
     p: 0
@@ -214,7 +214,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_foot_pos_y:
     p: 0
@@ -224,4 +224,4 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False

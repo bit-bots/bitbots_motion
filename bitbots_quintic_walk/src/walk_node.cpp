@@ -35,6 +35,10 @@ WalkNode::WalkNode(const std::string ns) :
   roll_vel_ = 0;
   pitch_vel_ = 0;
 
+  x_speed_multiplier_ = 1;
+  y_speed_multiplier_ = 1;
+  yaw_speed_multiplier_ = 1;
+
   // read config
   pnh_.param<double>("engine_frequency", engine_frequency_, 100.0);
   pnh_.param<bool>("simulation_active", simulation_active_, false);
@@ -339,10 +343,12 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
+  // furthermore, the engine does not really reach the correct goal speed, dependent on the parameters
+
   // the sidewards movement only does one step per double step, since the second foot only goes back to the initial pose
   // therefore we need to multiply it by 2
-  current_request_.linear_orders = {msg.linear.x * factor, msg.linear.y * factor * 2, msg.linear.z * factor};
-  current_request_.angular_z = msg.angular.z * factor;
+  current_request_.linear_orders = {msg.linear.x * factor * x_speed_multiplier_, msg.linear.y * factor * 2 * y_speed_multiplier_, msg.linear.z * factor};
+  current_request_.angular_z = msg.angular.z * factor * yaw_speed_multiplier_;
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
@@ -360,10 +366,10 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   }
 
   // warn user that speed was limited
-  if (msg.linear.x * factor != current_request_.linear_orders[0] ||
-      msg.linear.y * factor != current_request_.linear_orders[1] / 2 ||
+  if (msg.linear.x * factor * x_speed_multiplier_ != current_request_.linear_orders[0] ||
+      msg.linear.y * factor * y_speed_multiplier_ != current_request_.linear_orders[1] / 2 ||
       msg.linear.z * factor != current_request_.linear_orders[2] ||
-      msg.angular.z * factor != current_request_.angular_z) {
+      msg.angular.z * factor * yaw_speed_multiplier_ != current_request_.angular_z) {
     ROS_WARN(
         "Speed command was x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f",
         msg.linear.x,
@@ -533,6 +539,10 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   max_step_linear_[2] = config.max_step_z;
   max_step_angular_ = config.max_step_angular;
   max_step_xy_ = config.max_step_xy;
+
+  x_speed_multiplier_ =config.x_speed_multiplier;
+  y_speed_multiplier_ =config.y_speed_multiplier;
+  yaw_speed_multiplier_ =config.yaw_speed_multiplier;
 
   imu_active_ = config.imu_active;
   imu_pitch_threshold_ = config.imu_pitch_threshold;

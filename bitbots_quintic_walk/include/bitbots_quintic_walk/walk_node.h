@@ -178,6 +178,10 @@ class WalkNode {
   double max_step_xy_;
   bitbots_quintic_walk::WalkEngine walk_engine_;
 
+  double x_speed_multiplier_;
+  double y_speed_multiplier_;
+  double yaw_speed_multiplier_;
+
   bitbots_msgs::JointCommand command_msg_;
   nav_msgs::Odometry odom_msg_;
 
