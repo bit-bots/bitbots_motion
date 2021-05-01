@@ -86,12 +86,15 @@ class KickNode {
   ros::Subscriber cop_l_subscriber_;
   ros::Subscriber cop_r_subscriber_;
   ros::Subscriber joint_state_subscriber_;
+  ros::Subscriber imu_subscriber_;
   ActionServer server_;
   KickEngine engine_;
   Stabilizer stabilizer_;
   Visualizer visualizer_;
   KickIK ik_;
   int engine_rate_;
+  int stable_duration_;
+  bool final_stabilizing_;
   double last_ros_update_time_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
@@ -131,6 +134,7 @@ class KickNode {
   bitbots_msgs::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
   void copLCallback(const geometry_msgs::PointStamped &cop);
   void copRCallback(const geometry_msgs::PointStamped &cop);
+  void imuCallback(const sensor_msgs::Imu &imu);
 };
 }
 

@@ -50,6 +50,7 @@ KickPositions KickEngine::update(double dt) {
   positions.flying_foot_pose = tf2::transformToEigen(tf2::toMsg(flying_foot_spline_.getTfTransform(time_)));
   positions.is_left_kick = is_left_kick_;
   positions.engine_time = time_;
+  positions.engine_phase = getPhase();
 
   /* calculate if we want to use center-of-pressure in the current phase
    * use COP based support point only when the weight is on the support foot
@@ -286,7 +287,7 @@ bool KickEngine::isLeftKick() {
 }
 
 int KickEngine::getPercentDone() const {
-  return int(time_ / phase_timings_.move_trunk_back * 100);
+  return std::min(int(time_ / phase_timings_.move_trunk_back * 100), 100);
 }
 
 geometry_msgs::Pose KickEngine::getTrunkPose() {

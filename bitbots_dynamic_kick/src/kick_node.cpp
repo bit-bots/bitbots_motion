@@ -34,6 +34,7 @@ KickNode::KickNode(const std::string &ns) :
   cop_l_subscriber_ = node_handle_.subscribe("cop_l", 1, &KickNode::copLCallback, this);
   cop_r_subscriber_ = node_handle_.subscribe("cop_r", 1, &KickNode::copRCallback, this);
   joint_state_subscriber_ = node_handle_.subscribe("joint_states", 1, &KickNode::jointStateCallback, this);
+  imu_subscriber_ = node_handle_.subscribe("imu", 1, &KickNode::imuCallback, this);
   server_.start();
 }
 
@@ -57,8 +58,14 @@ void KickNode::jointStateCallback(const sensor_msgs::JointState &joint_states) {
   }
 }
 
+void KickNode::imuCallback(const sensor_msgs::Imu &imu) {
+  stabilizer_.imu_ = imu;
+}
+
 void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t /* level */) {
   engine_rate_ = config.engine_rate;
+  stable_duration_ = config.stable_duration;
+  final_stabilizing_ = config.use_final_stabilizing;
 
   KickParams params = KickParams();
   params.foot_rise = config.foot_rise;
@@ -81,6 +88,7 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   engine_.setParams(params);
 
   stabilizer_.useCop(config.use_center_of_pressure);
+  stabilizer_.setStableThreshold(config.stable_threshold);
 
   VisualizationParams viz_params = VisualizationParams();
   viz_params.spline_smoothness = config.spline_smoothness;
@@ -195,6 +203,7 @@ double KickNode::getTimeDelta() {
 void KickNode::loopEngine(ros::Rate loop_rate) {
   /* Do the loop as long as nothing cancels it */
   double dt;
+  int stable_duration = 0;
   while (server_.isActive() && !server_.isPreemptRequested()) {
     dt = getTimeDelta();
     std::optional<bitbots_splines::JointGoals> motor_goals = kickStep(dt);
@@ -206,7 +215,13 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
                            bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
     server_.publishFeedback(feedback);
 
-    if (feedback.percent_done >= 100) {
+    if (stabilizer_.isStable()) {
+      stable_duration += 1;
+    } else {
+      stable_duration = 0;
+    }
+
+    if (feedback.percent_done >= 100 && (stable_duration >= stable_duration_ || !final_stabilizing_)) {
       break;
     }
     joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
@@ -219,7 +234,6 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
 
 bitbots_splines::JointGoals KickNode::kickStep(double dt) {
   KickPositions positions = engine_.update(dt);
-  // TODO: should positions be an std::optional? how are errors represented?
   KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(dt));
   bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
 

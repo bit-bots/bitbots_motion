@@ -27,6 +27,7 @@ choose_foot_corridor_width: 0.4
 use_center_of_pressure: false
 stabilizing_point_x: -0.02
 stabilizing_point_y: -0.02
+use_final_stabilizing: false
 
 # these values are used only if use_center_of_pressure is true
 pid_x/p: 0.2
@@ -35,6 +36,14 @@ pid_x/d: 0
 pid_y/p: 0.5
 pid_y/i: 0.0015
 pid_y/d: 1.5
+
+# these values are used only if use_final_stabilizing is true
+pid_pitch/p: 1
+pid_pitch/i: 0
+pid_pitch/d: 0
+pid_roll/p: 1
+pid_roll/i: 0
+pid_roll/d: 0
 
 ### Visualization ###
 spline_smoothness: 100
