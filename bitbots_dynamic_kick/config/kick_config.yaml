@@ -4,7 +4,7 @@
 engine_rate: 500
 foot_rise: 0.08
 foot_distance: 0.17
-kick_windup_distance: 0.31
+kick_windup_distance: 0.23
 trunk_height: 0.36
 trunk_roll: -0.208
 trunk_pitch: 0.134
