@@ -1,0 +1,13 @@
+<launch>
+    <arg name="sim" default="true"/>
+
+    <include file="$(find bitbots_dynup)/launch/test.launch">
+        <arg name="sim" value="$(arg sim)"/>
+    </include>
+
+    <include file="$(find wolfgang_webots_sim)/launch/simulation.launch">
+        <arg name="headless" value="true" />
+    </include>
+
+    <test pkg="bitbots_dynup" type="test_dynup.py" test-name="test_dynup" time-limit="300"/>
+</launch>
