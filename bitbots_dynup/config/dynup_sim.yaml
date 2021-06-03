@@ -4,30 +4,32 @@ dynup:
 
   # end pose
   arm_extended_length: 0.3
-  foot_distance: 0.2
+  foot_distance: 0.193
   hand_walkready_pitch: -25.0
   hand_walkready_height: -0.35
-  trunk_height: 0.4
-  trunk_pitch: 0.0
-  trunk_x_final: 0
+  trunk_height: 0.391
+  trunk_pitch: 0.178
+  trunk_x_final: -0.0256
 
   arm_side_offset: 0.142
+  #arm_side_offset: 0.154
 
   # Back
-  arms_angle_back: 120.36
-  com_shift_1: 0.051
-  com_shift_2: 0.0
-  foot_angle: 51.76
-  hands_behind_back_x: 0.162
-  hands_behind_back_z: 0.183
-  leg_min_length_back: 0.253
-  time_foot_ground_back: 0.536
-  time_full_squat_hands: 0.172
-  time_full_squat_legs: 0.196
-  time_legs_close: 0.068
-  trunk_height_back: 0.179
-  trunk_overshoot_angle_back: 5.95
-  wait_in_squat_back: 0.6
+  arms_angle_back: 127.25
+  com_shift_1: 0.068
+  com_shift_2: 0.012
+  foot_angle: 33.21
+  hands_behind_back_x: 0.138
+  hands_behind_back_z: 0.152
+  leg_min_length_back: 0.24
+  time_foot_ground_back: 0.224
+  time_full_squat_hands: 0.096
+  time_full_squat_legs: 0.032
+  time_legs_close: 0.0
+  trunk_height_back: 0.129
+  trunk_overshoot_angle_back: 0.89
+  wait_in_squat_back: 0.416
+
 
   # Front
   hands_pitch: -77.97
@@ -45,16 +47,17 @@ dynup:
   wait_in_squat_front: 0.128
 
   # Rise
-  rise_time: 0.352
+  rise_time: 0.672
 
   # Descend
   descend_time: 0.25
 
   # Stabilier
-  stabilizing: True
+  stabilizing: False
   minimal_displacement: False
   stable_threshold: 0.05
   stable_duration: 100
+  stabilization_timeout: 2
 
   # Visualizer
   spline_smoothness: 100
