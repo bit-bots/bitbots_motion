@@ -11,8 +11,9 @@ dynup:
   trunk_pitch: 10.2
   trunk_x_final: -0.0256
 
-  arm_side_offset: 0.163
-  #arm_side_offset: 0.154
+  #arm_side_offset: 0.163
+  arm_side_offset: 0.13 #front
+
 
   # Back
   arms_angle_back: 113.75
@@ -32,24 +33,23 @@ dynup:
 
 
   # Front
-  hands_pitch: -77.97
-  leg_min_length_front: 0.26
-  max_leg_angle: 60.88
-  time_foot_close: 0.256
-  time_foot_ground_front: 0.064
-  time_hands_front: 0.096
-  time_hands_rotate: 0.16
-  time_hands_side: 0.224
-  time_to_squat: 0.384
-  time_torso_45: 0.288
-  trunk_overshoot_angle_front: -44.89
-  trunk_x_front: 0.052
-  wait_in_squat_front: 0.128
-
+  hands_pitch: -46.7
+  leg_min_length_front: 0.298
+  max_leg_angle: 77.64
+  time_foot_close: 0.0
+  time_foot_ground_front: 0.032
+  time_hands_front: 0.0
+  time_hands_rotate: 0.352
+  time_hands_side: 0.096
+  time_to_squat: 0.736
+  time_torso_45: 0.256
+  trunk_overshoot_angle_front: -6.16
+  trunk_x_front: 0.035
+  wait_in_squat_front: 0.032
   # Rise
-  #rise_time: 0.672
+  rise_time: 0.256 #front
   #rise_time: 0.16 #back
-  rise_time: 0.75
+  #rise_time: 0.75
 
   # Descend
   descend_time: 0.25
@@ -66,18 +66,18 @@ dynup:
   display_debug: True
 
   pid_trunk_roll:
-    p: 0.36
-    i: 0.8674
-    d: 0.03735
+    p: 0.0
+    i: 0.0
+    d: 0.0
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
     publish_state: False
   pid_trunk_pitch:
-    p: -0.42
-    i: -5.31646
-    d: -0.008295
+    p: -0.0
+    i: -0.0
+    d: -0.000
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0
