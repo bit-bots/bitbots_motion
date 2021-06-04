@@ -48,7 +48,8 @@ dynup:
 
   # Rise
   #rise_time: 0.672
-  rise_time: 0.16 #back
+  #rise_time: 0.16 #back
+  rise_time: 0.75
 
   # Descend
   descend_time: 0.25
