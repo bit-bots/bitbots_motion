@@ -8,27 +8,27 @@ dynup:
   hand_walkready_pitch: -25.0
   hand_walkready_height: -0.35
   trunk_height: 0.391
-  trunk_pitch: 0.178
+  trunk_pitch: 10.2
   trunk_x_final: -0.0256
 
-  arm_side_offset: 0.142
+  arm_side_offset: 0.163
   #arm_side_offset: 0.154
 
   # Back
-  arms_angle_back: 127.25
-  com_shift_1: 0.068
-  com_shift_2: 0.012
-  foot_angle: 33.21
-  hands_behind_back_x: 0.138
-  hands_behind_back_z: 0.152
-  leg_min_length_back: 0.24
-  time_foot_ground_back: 0.224
-  time_full_squat_hands: 0.096
-  time_full_squat_legs: 0.032
-  time_legs_close: 0.0
-  trunk_height_back: 0.129
-  trunk_overshoot_angle_back: 0.89
-  wait_in_squat_back: 0.416
+  arms_angle_back: 113.75
+  com_shift_1: 0.1
+  com_shift_2: 0.046
+  foot_angle: 67.97
+  hands_behind_back_x: 0.08
+  hands_behind_back_z: 0.241
+  leg_min_length_back: 0.297
+  time_foot_ground_back: 0.064
+  time_full_squat_hands: 0.128
+  time_full_squat_legs: 0.096
+  time_legs_close: 0.064
+  trunk_height_back: 0.112
+  trunk_overshoot_angle_back: 6.72
+  wait_in_squat_back: 0.096
 
 
   # Front
@@ -47,7 +47,8 @@ dynup:
   wait_in_squat_front: 0.128
 
   # Rise
-  rise_time: 0.672
+  #rise_time: 0.672
+  rise_time: 0.16 #back
 
   # Descend
   descend_time: 0.25
