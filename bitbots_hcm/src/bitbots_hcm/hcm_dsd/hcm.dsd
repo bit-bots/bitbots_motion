@@ -44,4 +44,6 @@ $StartHCM
                                                 STAY_WALKING --> @StayWalking
                                                 NOT_WALKING --> $Kicking
                                                     KICKING --> @StayKicking
-                                                    NOT_KICKING --> @StayControlable
+                                                    NOT_KICKING -->  $Controlable
+                                                        NOT_WALKREADY --> @PlayAnimationDynup + direction:walkready + initial:true
+                                                        WALKREADY --> @StayControlable

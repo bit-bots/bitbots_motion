@@ -6,6 +6,25 @@ from humanoid_league_speaker.speaker import speak
 from humanoid_league_msgs.msg import Audio
 
 
+def is_walkready(current_joint_state, walkready_pose_dict, walkready_pose_threshold):
+    """
+    We check if any joint is has an offset from the walkready pose which is higher than a threshold
+    """
+    if current_joint_state is None or current_joint_state == []:
+        return False
+    i = 0
+    for joint_name in current_joint_state.name:
+        if joint_name == "HeadPan" or joint_name == "HeadTilt":
+            # we dont care about the head position
+            i += 1
+            continue
+        if abs(math.degrees(current_joint_state.position[i]) -
+               walkready_pose_dict[joint_name]) > walkready_pose_threshold:
+            return False
+        i += 1
+    return True
+
+
 class StartHCM(AbstractDecisionElement):
     """
     Initializes HCM.
@@ -21,28 +40,11 @@ class StartHCM(AbstractDecisionElement):
                 return "SHUTDOWN_REQUESTED"
         else:
             if not reevaluate:
-                if not self.is_walkready():
+                if not is_walkready(self.blackboard.current_joint_state, self.blackboard.walkready_pose_dict,
+                                    self.blackboard.walkready_pose_threshold):
                     return "NOT_WALKREADY"
                 self.blackboard.current_state = RobotControlState.STARTUP
             return "RUNNING"
-
-    def is_walkready(self):
-        """
-        We check if any joint is has an offset from the walkready pose which is higher than a threshold
-        """
-        if self.blackboard.current_joint_state is None or self.blackboard.current_joint_state == []:
-            return False
-        i = 0
-        for joint_name in self.blackboard.current_joint_state.name:
-            if joint_name == "HeadPan" or joint_name == "HeadTilt":
-                # we dont care about the head position
-                i += 1
-                continue
-            if abs(math.degrees(self.blackboard.current_joint_state.position[i]) -
-                   self.blackboard.walkready_pose_dict[joint_name]) > self.blackboard.walkready_pose_threshold:
-                return False
-            i += 1
-        return True
 
     def get_reevaluate(self):
         return True
@@ -105,7 +107,7 @@ class CheckMotors(AbstractDecisionElement):
         # have a small break, since this can happen often due to loose cabling
         if self.blackboard.previous_joint_state is not None and self.blackboard.current_joint_state is not None \
                 and (self.blackboard.previous_joint_state.effort != self.blackboard.current_joint_state.effort \
-                or self.blackboard.previous_joint_state.position != self.blackboard.current_joint_state.position) \
+                     or self.blackboard.previous_joint_state.position != self.blackboard.current_joint_state.position) \
                 and not self.blackboard.servo_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
 
@@ -311,7 +313,8 @@ class FallingClassifier(AbstractDecisionElement):
         if self.blackboard.falling_detection_active:
             prediction = self.blackboard.classifier.smooth_classify(self.blackboard.imu_msg,
                                                                     self.blackboard.current_joint_state,
-                                                                    self.blackboard.cop_l_msg, self.blackboard.cop_r_msg)
+                                                                    self.blackboard.cop_l_msg,
+                                                                    self.blackboard.cop_r_msg)
             if prediction == 0:
                 return "NOT_FALLING"
             else:
@@ -442,6 +445,25 @@ class Kicking(AbstractDecisionElement):
             return 'KICKING'
         else:
             return 'NOT_KICKING'
+
+    def get_reevaluate(self):
+        return True
+
+
+class Controlable(AbstractDecisionElement):
+    """
+    Decides if the robot is currently controlable
+    """
+
+    def perform(self, reevaluate=False):
+        # check if the robot is in a walkready pose
+        if not is_walkready(self.blackboard.current_joint_state, self.blackboard.walkready_pose_dict,
+                            self.blackboard.walkready_pose_threshold):
+            self.blackboard.current_state = RobotControlState.ANIMATION_RUNNING
+            return "NOT_WALKREADY"
+        else:
+            self.blackboard.current_state = RobotControlState.CONTROLLABLE
+            return "WALKREADY"
 
     def get_reevaluate(self):
         return True
