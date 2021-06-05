@@ -5,10 +5,10 @@ dynup:
   # end pose
   arm_extended_length: 0.3
   foot_distance: 0.193
-  hand_walkready_pitch: -25.0
-  hand_walkready_height: -0.35
+  hand_walkready_pitch: 34.2
+  hand_walkready_height: -0.18
   trunk_height: 0.391
-  trunk_pitch: 10.2
+  trunk_pitch: 5.2
   trunk_x_final: -0.0256
 
   #arm_side_offset: 0.163
@@ -18,7 +18,7 @@ dynup:
   # Back
   arms_angle_back: 113.75
   com_shift_1: 0.1
-  com_shift_2: 0.046
+  com_shift_2: 0.066
   foot_angle: 67.97
   hands_behind_back_x: 0.08
   hands_behind_back_z: 0.241
@@ -40,7 +40,7 @@ dynup:
   time_foot_ground_front: 0.032
   time_hands_front: 0.0
   time_hands_rotate: 0.352
-  time_hands_side: 0.096
+  time_hands_side: 0.1
   time_to_squat: 0.736
   time_torso_45: 0.256
   trunk_overshoot_angle_front: -6.16
@@ -55,7 +55,7 @@ dynup:
   descend_time: 0.25
 
   # Stabilier
-  stabilizing: False
+  stabilizing: True
   minimal_displacement: False
   stable_threshold: 0.05
   stable_duration: 100
@@ -75,9 +75,9 @@ dynup:
     antiwindup: True
     publish_state: False
   pid_trunk_pitch:
-    p: -0.0
-    i: -0.0
-    d: -0.000
+    p: -0.22
+    i: -3.31646
+    d: -0.008295
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0
