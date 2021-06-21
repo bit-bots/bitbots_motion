@@ -25,6 +25,7 @@ struct KickParams {
   double foot_distance;
   double kick_windup_distance;
   double trunk_height;
+  double foot_extra_forward;
 
   double trunk_roll;
   double trunk_pitch;
