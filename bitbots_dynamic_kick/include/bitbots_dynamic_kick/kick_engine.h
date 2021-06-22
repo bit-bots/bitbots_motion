@@ -46,6 +46,7 @@ struct KickParams {
 
   double foot_pitch;
   double foot_rise_lower;
+  double foot_rise_kick;
 };
 
 /**
