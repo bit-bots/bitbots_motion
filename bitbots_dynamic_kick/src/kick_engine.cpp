@@ -14,6 +14,7 @@ void KickEngine::reset() {
 }
 
 void KickEngine::setGoals(const KickGoals &goals) {
+    ROS_WARN("setgoal");
   is_left_kick_ = calcIsLeftFootKicking(goals.ball_position, goals.kick_direction);
   // TODO Internal state is dirty when goal transformation fails
 
@@ -83,6 +84,7 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
    */
 
   /* calculate timings for this kick */
+  ROS_ERROR_STREAM(params_.move_to_ball_time);
   phase_timings_.move_trunk = 0 + params_.move_trunk_time;
   phase_timings_.raise_foot = phase_timings_.move_trunk + params_.raise_foot_time;
   phase_timings_.windup = phase_timings_.raise_foot + params_.move_to_ball_time;
@@ -132,6 +134,8 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk, 0);
   flying_foot_spline_.z()->addPoint(phase_timings_.raise_foot, params_.foot_rise);
   flying_foot_spline_.z()->addPoint(phase_timings_.windup, params_.foot_rise);
+  flying_foot_spline_.z()->addPoint(phase_timings_.windup + (phase_timings_.kick - phase_timings_.windup) /2,
+                                    params_.foot_rise_lower);
   flying_foot_spline_.z()->addPoint(phase_timings_.kick, params_.foot_rise);
   flying_foot_spline_.z()->addPoint(phase_timings_.move_back, params_.foot_rise);
   flying_foot_spline_.z()->addPoint(phase_timings_.lower_foot, 0.4 * params_.foot_rise);
@@ -147,9 +151,13 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   flying_foot_spline_.roll()->addPoint(0, start_r);
   flying_foot_spline_.roll()->addPoint(phase_timings_.windup, start_r);
   flying_foot_spline_.roll()->addPoint(phase_timings_.move_trunk_back, start_r);
+
   flying_foot_spline_.pitch()->addPoint(0, start_p);
-  flying_foot_spline_.pitch()->addPoint(phase_timings_.windup, start_p);
+  flying_foot_spline_.pitch()->addPoint(phase_timings_.raise_foot, start_p);
+  flying_foot_spline_.pitch()->addPoint(phase_timings_.windup, params_.foot_pitch);
+  flying_foot_spline_.pitch()->addPoint(phase_timings_.kick, 0);
   flying_foot_spline_.pitch()->addPoint(phase_timings_.move_trunk_back, start_p);
+
   flying_foot_spline_.yaw()->addPoint(0, start_y);
   flying_foot_spline_.yaw()->addPoint(phase_timings_.raise_foot, start_y);
   flying_foot_spline_.yaw()->addPoint(phase_timings_.windup, target_yaw);

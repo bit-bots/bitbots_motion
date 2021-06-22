@@ -43,6 +43,9 @@ struct KickParams {
   double stabilizing_point_y;
 
   double choose_foot_corridor_width;
+
+  double foot_pitch;
+  double foot_rise_lower;
 };
 
 /**

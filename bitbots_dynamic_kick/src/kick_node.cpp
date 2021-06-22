@@ -112,11 +112,15 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.move_to_ball_time = config.move_to_ball_time;
   params.kick_time = config.kick_time;
   params.move_back_time = config.move_back_time;
+  ROS_WARN_STREAM(params.move_to_ball_time);
   params.lower_foot_time = config.lower_foot_time;
   params.move_trunk_back_time = config.move_trunk_back_time;
   params.stabilizing_point_x = config.stabilizing_point_x;
   params.stabilizing_point_y = config.stabilizing_point_y;
   params.choose_foot_corridor_width = config.choose_foot_corridor_width;
+  params.foot_extra_forward = config.foot_extra_forward;
+  params.foot_pitch = config.foot_pitch;
+  params.foot_rise_lower = config.foot_rise_lower;
   engine_.setParams(params);
 
   stabilizer_.useCop(config.use_center_of_pressure);
@@ -174,7 +178,7 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
 
 void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
-  ROS_INFO("Accepted new goal");
+  ROS_INFO("Kick accepted new goal");
 
   /* get transform to base_footprint */
   geometry_msgs::TransformStamped goal_frame_to_base_footprint =
