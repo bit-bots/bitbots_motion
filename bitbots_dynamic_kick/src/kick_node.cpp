@@ -122,6 +122,7 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.foot_pitch = config.foot_pitch;
   params.foot_rise_lower = config.foot_rise_lower;
   params.foot_rise_kick = config.foot_rise_kick;
+  params.earlier_time = config.earlier_time;
   engine_.setParams(params);
 
   stabilizer_.useCop(config.use_center_of_pressure);

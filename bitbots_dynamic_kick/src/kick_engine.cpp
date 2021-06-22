@@ -136,6 +136,7 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   flying_foot_spline_.z()->addPoint(phase_timings_.windup, params_.foot_rise);
   flying_foot_spline_.z()->addPoint(phase_timings_.windup + (phase_timings_.kick - phase_timings_.windup) /2,
                                     params_.foot_rise_lower);
+  flying_foot_spline_.z()->addPoint(phase_timings_.kick - params_.earlier_time, params_.foot_rise_kick);
   flying_foot_spline_.z()->addPoint(phase_timings_.kick, params_.foot_rise_kick);
   flying_foot_spline_.z()->addPoint(phase_timings_.move_back, params_.foot_rise_kick);
   flying_foot_spline_.z()->addPoint(phase_timings_.lower_foot, 0.4 * params_.foot_rise_kick);
@@ -153,6 +154,7 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   flying_foot_spline_.roll()->addPoint(phase_timings_.windup, -sin(target_yaw) * params_.foot_pitch);
   flying_foot_spline_.roll()->addPoint(phase_timings_.windup + (phase_timings_.kick - phase_timings_.windup) /2,
                                     - sin(target_yaw) * params_.foot_pitch);
+  flying_foot_spline_.roll()->addPoint(phase_timings_.kick - params_.earlier_time, 0);
   flying_foot_spline_.roll()->addPoint(phase_timings_.kick, 0);
   flying_foot_spline_.roll()->addPoint(phase_timings_.move_trunk_back, start_r);
 
@@ -161,6 +163,7 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   flying_foot_spline_.pitch()->addPoint(phase_timings_.windup, cos(target_yaw) * params_.foot_pitch);
   flying_foot_spline_.pitch()->addPoint(phase_timings_.windup + (phase_timings_.kick - phase_timings_.windup) /2,
                                     cos(target_yaw) * params_.foot_pitch);
+  flying_foot_spline_.pitch()->addPoint(phase_timings_.kick - params_.earlier_time, 0);
   flying_foot_spline_.pitch()->addPoint(phase_timings_.kick, 0);
   flying_foot_spline_.pitch()->addPoint(phase_timings_.move_trunk_back, start_p);
 
