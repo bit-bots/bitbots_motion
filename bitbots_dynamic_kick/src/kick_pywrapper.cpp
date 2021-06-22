@@ -82,6 +82,11 @@ void PyKickWrapper::set_params(const boost::python::object params) {
     else if (keystr == "stabilizing_point_x") { conf.stabilizing_point_x = std::stof(valstr); }
     else if (keystr == "stabilizing_point_y") { conf.stabilizing_point_y = std::stof(valstr); }
     else if (keystr == "spline_smoothness") { conf.spline_smoothness = std::stoi(valstr); }
+    else if (keystr == "earlier_time") { conf.earlier_time = std::stof(valstr); }
+    else if (keystr == "foot_rise_kick") { conf.foot_rise_kick = std::stof(valstr); }
+    else if (keystr == "foot_rise_lower") { conf.foot_rise_lower = std::stof(valstr); }
+    else if (keystr == "foot_pitch") { conf.foot_pitch = std::stof(valstr); }
+    else if (keystr == "foot_extra_forward") { conf.foot_extra_forward = std::stof(valstr); }
     else { std::cerr << keystr << " not known. WILL BE IGNORED." << std::endl; }
   }
 
