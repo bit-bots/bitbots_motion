@@ -10,8 +10,8 @@ KickNode::KickNode(const std::string &ns) :
     robot_model_loader_(ns + "robot_description", false) {
   private_node_handle_.param<std::string>("base_link_frame", base_link_frame_, "base_link");
   private_node_handle_.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
-  private_node_handle_.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
-  private_node_handle_.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
+  private_node_handle_.param<std::string>("r_toe_frame", r_toe_frame_, "r_toe");
+  private_node_handle_.param<std::string>("l_toe_frame", l_toe_frame_, "l_toe");
 
   unstable_config_ = getUnstableConfig();
 
@@ -41,15 +41,15 @@ KickNode::KickNode(const std::string &ns) :
 }
 
 void KickNode::copLCallback(const geometry_msgs::PointStamped &cop) {
-  if (cop.header.frame_id != l_sole_frame_) {
-    ROS_ERROR_STREAM("cop_l not in " << l_sole_frame_ << " frame! Stabilizing will not work.");
+  if (cop.header.frame_id != l_toe_frame_) {
+    ROS_ERROR_STREAM("cop_l not in " << l_toe_frame_ << " frame! Stabilizing will not work.");
   }
   stabilizer_.cop_left = cop.point;
 }
 
 void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
-  if (cop.header.frame_id != r_sole_frame_) {
-    ROS_ERROR_STREAM("cop_r not in " << r_sole_frame_ << " frame! Stabilizing will not work.");
+  if (cop.header.frame_id != r_toe_frame_) {
+    ROS_ERROR_STREAM("cop_r not in " << r_toe_frame_ << " frame! Stabilizing will not work.");
   }
   stabilizer_.cop_right = cop.point;
 }
@@ -155,11 +155,11 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
   ik_.reset();
 
   /* get trunk to base footprint transform, assume left and right foot are next to each other (same x and z) */
-  Eigen::Isometry3d trunk_to_l_sole = current_state_->getGlobalLinkTransform("l_sole");
-  Eigen::Isometry3d trunk_to_r_sole = current_state_->getGlobalLinkTransform("r_sole");
-  Eigen::Isometry3d trunk_to_base_footprint = trunk_to_l_sole;
+  Eigen::Isometry3d trunk_to_l_toe = current_state_->getGlobalLinkTransform("l_toe");
+  Eigen::Isometry3d trunk_to_r_toe = current_state_->getGlobalLinkTransform("r_toe");
+  Eigen::Isometry3d trunk_to_base_footprint = trunk_to_l_toe;
   trunk_to_base_footprint.translation().y() =
-      (trunk_to_r_sole.translation().y() + trunk_to_l_sole.translation().y()) / 2.0;
+      (trunk_to_r_toe.translation().y() + trunk_to_l_toe.translation().y()) / 2.0;
 
   /* Set engines goal_msg and start calculating */
   KickGoals goals;
@@ -171,9 +171,9 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
 
   /* visualization */
   visualizer_.displayReceivedGoal(goal_msg);
-  visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? r_sole_frame_ : l_sole_frame_);
-  visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? r_sole_frame_ : l_sole_frame_);
-  visualizer_.displayTrunkSplines(engine_.getTrunkSplines(), (engine_.isLeftKick() ? r_sole_frame_ : l_sole_frame_));
+  visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
+  visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
+  visualizer_.displayTrunkSplines(engine_.getTrunkSplines(), (engine_.isLeftKick() ? r_toe_frame_ : l_toe_frame_));
 
   return true;
 }

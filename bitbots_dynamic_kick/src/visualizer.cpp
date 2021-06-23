@@ -94,11 +94,11 @@ void Visualizer::publishGoals(const KickPositions &positions,
 
   std::string support_foot_frame, flying_foot_frame;
   if (positions.is_left_kick) {
-    support_foot_frame = "r_sole";
-    flying_foot_frame = "l_sole";
+    support_foot_frame = "r_toe";
+    flying_foot_frame = "l_toe";
   } else {
-    support_foot_frame = "l_sole";
-    flying_foot_frame = "r_sole";
+    support_foot_frame = "l_toe";
+    flying_foot_frame = "r_toe";
   }
 
   /* Derive positions from robot state */

@@ -84,8 +84,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    * @param ball_position Position of the ball
    * @param kick_direction Direction into which to kick the ball
    * @param kick_speed Speed with which to kick the ball
-   * @param r_foot_pose Current pose of right foot in l_sole frame
-   * @param l_foot_pose Current pose of left foot in r_sole frame
+   * @param r_foot_pose Current pose of right foot in l_toe frame
+   * @param l_foot_pose Current pose of left foot in r_toe frame
    *
    * @throws tf2::TransformException when goal cannot be converted into needed tf frames
    */

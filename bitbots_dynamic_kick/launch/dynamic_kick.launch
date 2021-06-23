@@ -8,7 +8,7 @@
     <rosparam command="load" file="$(find bitbots_dynamic_kick)/config/kick_config_unstable.yaml" />
     <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
     <param name="base_footprint_frame" value="$(arg tf_prefix)base_footprint"/>
-    <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
-    <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
+    <param name="r_toe_frame" value="$(arg tf_prefix)r_toe"/>
+    <param name="l_toe_frame" value="$(arg tf_prefix)l_toe"/>
   </node>
 </launch>

@@ -19,7 +19,7 @@ void KickEngine::setGoals(const KickGoals &goals) {
   // TODO Internal state is dirty when goal transformation fails
 
   /* Save given goals because we reuse them later */
-  auto transformed_goal = transformGoal((is_left_kick_) ? "r_sole" : "l_sole",
+  auto transformed_goal = transformGoal((is_left_kick_) ? "r_toe" : "l_toe",
                                         goals.trunk_to_base_footprint, goals.ball_position, goals.kick_direction);
   ball_position_ = transformed_goal.first;
   kick_direction_ = transformed_goal.second;
@@ -28,15 +28,15 @@ void KickEngine::setGoals(const KickGoals &goals) {
 
   time_ = 0;
 
-  Eigen::Isometry3d trunk_to_flying_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "l_sole" : "r_sole");
-  Eigen::Isometry3d trunk_to_support_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "r_sole" : "l_sole");
+  Eigen::Isometry3d trunk_to_flying_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "l_toe" : "r_toe");
+  Eigen::Isometry3d trunk_to_support_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "r_toe" : "l_toe");
 
   /* get the start position of the trunk relative to the support foot */
   Eigen::Isometry3d trunk_frame;
   if (is_left_kick_) {
-    trunk_frame = current_state_->getGlobalLinkTransform("r_sole").inverse();
+    trunk_frame = current_state_->getGlobalLinkTransform("r_toe").inverse();
   } else {
-    trunk_frame = current_state_->getGlobalLinkTransform("l_sole").inverse();
+    trunk_frame = current_state_->getGlobalLinkTransform("l_toe").inverse();
   }
 
   /* Plan new splines according to new goal */
