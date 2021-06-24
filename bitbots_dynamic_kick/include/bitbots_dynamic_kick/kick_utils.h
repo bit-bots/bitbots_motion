@@ -4,12 +4,15 @@
 #include <Eigen/Geometry>
 #include <bitbots_dynamic_kick/KickDebug.h>
 
+#define M_TAU M_PI * 2
+
 namespace bitbots_dynamic_kick {
 
 struct KickPositions {
   bool is_left_kick = true;
   Eigen::Isometry3d trunk_pose;
   Eigen::Isometry3d flying_foot_pose;
+  Eigen::Isometry3d flying_foot_leg_space;
   bool cop_support_point = false;
   double engine_time;
 };

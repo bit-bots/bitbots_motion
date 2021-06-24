@@ -30,3 +30,5 @@ geometry_msgs/Pose flying_foot_pose_goal
 geometry_msgs/Pose flying_foot_pose_stabilized_goal
 geometry_msgs/Pose flying_foot_pose_ik_result
 geometry_msgs/Point flying_foot_position_ik_offset
+
+geometry_msgs/Pose flying_foot_pose_goal_leg_space

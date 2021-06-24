@@ -22,6 +22,8 @@ Visualizer::Visualizer(const std::string &base_topic) :
       /* queue_size */ 5, /* latch */ true);
   kick_point_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_point",
       /* queue_size */ 5, /* latch */ true);
+  ball_point_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "ball_point",
+      /* queue_size */ 5, /* latch */ true);
   debug_publisher_ = node_handle_.advertise<KickDebug>(base_topic_ + "debug",
       /* queue_size */ 5, /* latch */ false);
 }
@@ -35,7 +37,7 @@ void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines,
   if (foot_spline_publisher_.getNumSubscribers() == 0)
     return;
 
-  visualization_msgs::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness);
+  visualization_msgs::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness, true);
   path.markers[0].color.g = 1;
 
   foot_spline_publisher_.publish(path);
@@ -95,9 +97,24 @@ void Visualizer::displayKickPoint(const Eigen::Vector3d &kick_point, const std::
 
   marker.ns = marker_ns_;
   marker.id = MarkerIDs::RECEIVED_GOAL;
-  marker.color.g = 1;
+  marker.color.b = 1;
 
   kick_point_publisher_.publish(marker);
+}
+
+void Visualizer::displayBallPoint(const Eigen::Vector3d &ball_point, const std::string &support_foot_frame) {
+  if (kick_point_publisher_.getNumSubscribers() == 0)
+    return;
+
+  tf2::Vector3 tf_ball_point;
+  tf2::convert(ball_point, tf_ball_point);
+  visualization_msgs::Marker marker = getMarker(tf_ball_point, support_foot_frame);
+
+  marker.ns = marker_ns_;
+  marker.id = MarkerIDs::RECEIVED_GOAL;
+  marker.color.r = 1;
+
+  ball_point_publisher_.publish(marker);
 }
 
 void Visualizer::publishGoals(const KickPositions &positions,
@@ -142,6 +159,8 @@ void Visualizer::publishGoals(const KickPositions &positions,
   msg.flying_foot_pose_stabilized_goal = tf2::toMsg(stabilized_positions.flying_foot_pose);
   msg.flying_foot_pose_ik_result = tf2::toMsg(flying_foot_pose_ik_result);
   msg.flying_foot_position_ik_offset = tf2::toMsg(flying_foot_position_ik_offset);
+
+  msg.flying_foot_pose_goal_leg_space = tf2::toMsg(positions.flying_foot_leg_space);
 
   debug_publisher_.publish(msg);
 }

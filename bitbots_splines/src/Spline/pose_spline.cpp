@@ -8,6 +8,14 @@ tf2::Transform PoseSpline::getTfTransform(double time) {
   trans.setRotation(getOrientation(time));
   return trans;
 }
+
+tf2::Transform PoseSpline::getTfTransformLegSpace(double time) {
+  tf2::Transform trans;
+  trans.setOrigin(getPositionPosLegSpace(time));
+  trans.setRotation(getOrientation(time));
+  return trans;
+}
+
 geometry_msgs::Pose PoseSpline::getGeometryMsgPose(double time) {
   geometry_msgs::Pose msg;
   msg.position = getGeometryMsgPosition(time);
@@ -29,6 +37,17 @@ geometry_msgs::Quaternion PoseSpline::getGeometryMsgOrientation(double time) {
   tf2::convert(getOrientation(time), msg);
   return msg;
 }
+
+tf2::Vector3 PoseSpline::getPositionPosLegSpace(double time) {
+  Eigen::Vector3d leg(x_.pos(time), y_.pos(time), z_.pos(time));
+  Eigen::Vector3d cartesian = leg2cartesian(leg);
+  tf2::Vector3 pos;
+  pos[0] = cartesian.x();
+  pos[1] = cartesian.y();
+  pos[2] = cartesian.z();
+  return pos;
+}
+
 
 tf2::Vector3 PoseSpline::getPositionPos(double time) {
   tf2::Vector3 pos;

@@ -12,6 +12,8 @@ KickNode::KickNode(const std::string &ns) :
   private_node_handle_.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
   private_node_handle_.param<std::string>("r_toe_frame", r_toe_frame_, "r_toe");
   private_node_handle_.param<std::string>("l_toe_frame", l_toe_frame_, "l_toe");
+  private_node_handle_.param<std::string>("r_hip_frame", r_hip_frame_, "r_upper_leg");
+  private_node_handle_.param<std::string>("l_hip_frame", l_hip_frame_, "l_upper_leg");
   private_node_handle_.param<double>("ball_radius", ball_radius_, 0.07);
 
   unstable_config_ = getUnstableConfig();
@@ -24,13 +26,17 @@ KickNode::KickNode(const std::string &ns) :
     exit(1);
   }
   stabilizer_.setRobotModel(kinematic_model);
-  ik_.init(kinematic_model);
 
   /* this debug variable represents the goal state of the robot, i.e. what the ik goals are */
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
   /* this variable represents the current state of the robot, retrieved from joint states */
   current_state_.reset(new robot_state::RobotState(kinematic_model));
   engine_.setRobotState(current_state_);
+
+  Eigen::Isometry3d trunk_to_hip_l = current_state_->getGlobalLinkTransform(l_hip_frame_);
+  Eigen::Isometry3d trunk_to_hip_r = current_state_->getGlobalLinkTransform(r_hip_frame_);
+  ik_.init(kinematic_model);
+  engine_.setTrunkToHip(trunk_to_hip_l, trunk_to_hip_r);
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
   support_foot_publisher_ =
@@ -126,6 +132,11 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.earlier_time = config.earlier_time;
   params.low_x = config.low_x;
   params.low_x_speed = config.low_x_speed;
+
+  params.rise_length = config.rise_length;
+  params.windup_length = config.windup_length;
+  params.windup_alpha = config.windup_alpha;
+
   engine_.setParams(params);
 
   stabilizer_.useCop(config.use_center_of_pressure);
@@ -175,9 +186,10 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
 
   /* visualization */
   visualizer_.displayReceivedGoal(goal_msg);
+  visualizer_.displayBallPoint(engine_.getBallPoint(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
   visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
   visualizer_.displayKickPoint(engine_.getKickPoint(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
-  visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
+  visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? r_hip_frame_ : l_hip_frame_);
   visualizer_.displayTrunkSplines(engine_.getTrunkSplines(), (engine_.isLeftKick() ? r_toe_frame_ : l_toe_frame_));
 
   return true;

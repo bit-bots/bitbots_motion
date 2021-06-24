@@ -1,6 +1,7 @@
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POSE_SPLINE_H_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POSE_SPLINE_H_
 
+#include <bitbots_splines/utils.h>
 #include <bitbots_splines/smooth_spline.h>
 #include <bitbots_splines/spline_container.h>
 #include <tf2/LinearMath/Transform.h>
@@ -16,6 +17,7 @@ namespace bitbots_splines {
 class PoseSpline {
  public:
   tf2::Transform getTfTransform(double time);
+  tf2::Transform getTfTransformLegSpace(double time);
 
   geometry_msgs::Pose getGeometryMsgPose(double time);
   geometry_msgs::Point getGeometryMsgPosition(double time);
@@ -24,6 +26,8 @@ class PoseSpline {
   tf2::Vector3 getPositionPos(double time);
   tf2::Vector3 getPositionVel(double time);
   tf2::Vector3 getPositionAcc(double time);
+  tf2::Vector3 getPositionPosLegSpace(double time);
+
 
   tf2::Vector3 getEulerAngles(double time);
   tf2::Vector3 getEulerVel(double time);
