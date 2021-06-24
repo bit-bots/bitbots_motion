@@ -42,6 +42,13 @@ struct KickParams {
   double stabilizing_point_y;
 
   double choose_foot_corridor_width;
+
+  double foot_rise_windup;
+  double windup_pitch;
+
+  double hip_time;
+  double knee_time;
+  double ankle_time;
 };
 
 /**

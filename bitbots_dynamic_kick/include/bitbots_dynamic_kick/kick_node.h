@@ -136,8 +136,8 @@ class KickNode {
   /**
    * Get JointCommand message for JointGoals
    */
-  bitbots_msgs::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
-  bitbots_msgs::JointCommand getJointTorqueCommand();
+  bitbots_msgs::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals, std::vector<std::string> joints);
+  bitbots_msgs::JointCommand getJointTorqueCommand(std::vector<std::string> joints);
 
   /**
    * Get the config for the unstable kick

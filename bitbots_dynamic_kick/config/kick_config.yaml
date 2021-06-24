@@ -10,6 +10,12 @@ trunk_roll: 0.101229096615671
 trunk_pitch: -0.136135681655558
 trunk_yaw: 0.0558505360638186
 
+foot_rise_windup: 0.1
+windup_pitch: 0.4
+knee_time: 0.1
+ankle_time: 0.1
+
+
 # Timings
 move_trunk_time: 0.56
 raise_foot_time: 0.15

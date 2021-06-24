@@ -117,6 +117,11 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.stabilizing_point_x = config.stabilizing_point_x;
   params.stabilizing_point_y = config.stabilizing_point_y;
   params.choose_foot_corridor_width = config.choose_foot_corridor_width;
+  params.foot_rise_windup = config.foot_rise_windup;
+  params.windup_pitch = config.windup_pitch;
+  params.hip_time = config.hip_time;
+  params.knee_time = config.knee_time;
+  params.ankle_time = config.ankle_time;
   engine_.setParams(params);
 
   stabilizer_.useCop(config.use_center_of_pressure);
@@ -256,9 +261,19 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
       if (feedback.percent_done >= 100) {
         break;
       }
-      joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
-      if (engine_.getPhase() == KickPhase::KICK) {
-        joint_goal_publisher_.publish(getJointTorqueCommand());
+
+      std::vector<std::string> joints;
+      if (engine_.getPhase() == KickPhase::ANKLE) {
+        joints = {"LHipPitch", "LKnee", "LAnklePitch"};
+      }else if (engine_.getPhase() == KickPhase::KNEE){
+        joints = {"LHipPitch", "LKnee"};
+      }else if (engine_.getPhase() == KickPhase::HIP){
+        joints = {"LHipPitch"};
+      }
+
+      joint_goal_publisher_.publish(getJointCommand(motor_goals.value(), joints));
+      if (engine_.getPhase() == KickPhase::HIP || engine_.getPhase() == KickPhase::KNEE || engine_.getPhase() == KickPhase::ANKLE) {
+        joint_goal_publisher_.publish(getJointTorqueCommand(joints));
       }
     } else {
       sleep(0.0001);
@@ -282,7 +297,7 @@ bitbots_splines::JointGoals KickNode::kickStep(double dt) {
   return motor_goals;
 }
 
-bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::JointGoals &goals) {
+bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::JointGoals &goals, std::vector<std::string> joints) {
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
@@ -296,10 +311,10 @@ bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::Join
   command.joint_names = goals.first;
   command.positions = goals.second;
 
-  if (engine_.getPhase() == KickPhase::KICK) {
+  if (engine_.getPhase() == KickPhase::HIP) {
     // hacky power kick
     for (size_t i = command.joint_names.size(); i-- > 0;) {
-      if (command.joint_names[i] == "LKnee" ||  command.joint_names[i] == "LHipPitch" ||  command.joint_names[i] == "LAnklePitch"  ){
+      if (std::find(joints.begin(), joints.end(), command.joint_names[i]) != joints.end()){
         command.joint_names.erase(command.joint_names.begin() + i);
         command.positions.erase(command.positions.begin() + i);
       }
@@ -317,11 +332,15 @@ bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::Join
   return command;
 }
 
-bitbots_msgs::JointCommand KickNode::getJointTorqueCommand() {
+bitbots_msgs::JointCommand KickNode::getJointTorqueCommand(std::vector<std::string> joints) {
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
-  command.joint_names = {"LHipPitch", "LKnee", "LAnklePitch"};
-  command.accelerations = {10, -12.9, 10};
+  command.joint_names = joints;
+  std::vector<double> torques = {10, -12.9, 10};
+  std::vector<double>::const_iterator first = torques.begin();
+  std::vector<double>::const_iterator last = torques.begin() + joints.size();
+  std::vector<double> newVec(first, last);
+  command.accelerations = newVec;
   return command;
 }
 
@@ -339,7 +358,7 @@ bitbots_msgs::JointCommand KickNode::stepWrapper(double dt) {
   /* with stabilizing, we can call some callbacks here */
   bitbots_splines::JointGoals goals = kickStep(dt);
   if (engine_.getPercentDone() < 100) {
-    return getJointCommand(goals);//todo torque commands
+    return getJointCommand(goals, {});//todo torque commands
   } else {
     return {};
   }
