@@ -257,6 +257,9 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
         break;
       }
       joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
+      if (engine_.getPhase() == KickPhase::KICK) {
+        joint_goal_publisher_.publish(getJointTorqueCommand());
+      }
     } else {
       sleep(0.0001);
     }
@@ -293,6 +296,16 @@ bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::Join
   command.joint_names = goals.first;
   command.positions = goals.second;
 
+  if (engine_.getPhase() == KickPhase::KICK) {
+    // hacky power kick
+    for (size_t i = command.joint_names.size(); i-- > 0;) {
+      if (command.joint_names[i] == "LKnee" ||  command.joint_names[i] == "LHipPitch" ||  command.joint_names[i] == "LAnklePitch"  ){
+        command.joint_names.erase(command.joint_names.begin() + i);
+        command.positions.erase(command.positions.begin() + i);
+      }
+    }
+  }
+
   /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
   std::vector<double> vels(goals.first.size(), -1.0);
   std::vector<double> accs(goals.first.size(), -1.0);
@@ -301,6 +314,14 @@ bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::Join
   command.accelerations = accs;
   command.max_currents = pwms;
 
+  return command;
+}
+
+bitbots_msgs::JointCommand KickNode::getJointTorqueCommand() {
+  bitbots_msgs::JointCommand command;
+  command.header.stamp = ros::Time::now();
+  command.joint_names = {"LHipPitch", "LKnee", "LAnklePitch"};
+  command.accelerations = {10, -12.9, 10};
   return command;
 }
 
@@ -318,7 +339,7 @@ bitbots_msgs::JointCommand KickNode::stepWrapper(double dt) {
   /* with stabilizing, we can call some callbacks here */
   bitbots_splines::JointGoals goals = kickStep(dt);
   if (engine_.getPercentDone() < 100) {
-    return getJointCommand(goals);
+    return getJointCommand(goals);//todo torque commands
   } else {
     return {};
   }
