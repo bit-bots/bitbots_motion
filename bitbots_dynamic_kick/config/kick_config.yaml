@@ -9,15 +9,18 @@ trunk_height: 0.39
 trunk_roll: 0.101229096615671
 trunk_pitch: -0.136135681655558
 trunk_yaw: 0.0558505360638186
-foot_x_extra: 0.05
-foot_pitch: 0.6
+foot_extra_forward: 0.00
+foot_pitch: 0.00
 foot_rise_lower: 0.04
 foot_rise_kick: 0.08
+low_x: 0
+low_x_speed: 10
 
 # Timings
 move_trunk_time: 0.56
 raise_foot_time: 0.15
 move_to_ball_time: 0.19
+low_time: 0.2
 kick_time: 0.15
 move_back_time: 0.07
 lower_foot_time: 0.06

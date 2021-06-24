@@ -47,7 +47,12 @@ struct KickParams {
   double foot_pitch;
   double foot_rise_lower;
   double foot_rise_kick;
+
   double earlier_time;
+  double low_time;
+  double low_x;
+  double low_x_speed;
+
 };
 
 /**
@@ -58,6 +63,7 @@ class PhaseTimings {
   double move_trunk;
   double raise_foot;
   double windup;
+  double low;
   double kick;
   double move_back;
   double lower_foot;
@@ -130,6 +136,9 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   Eigen::Vector3d getWindupPoint();
 
+  Eigen::Vector3d getKickPoint();
+
+
   /**
    * Set a pointer to the current state of the robot, updated from joint states
    */
@@ -145,7 +154,9 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   KickParams params_;
   PhaseTimings phase_timings_;
   Eigen::Vector3d windup_point_;
+  Eigen::Vector3d kick_point_;
   robot_state::RobotStatePtr current_state_;
+  double ball_radius_;
 
   /**
    *  Calculate splines for a complete kick whereby is_left_kick_ should already be set correctly
@@ -159,6 +170,9 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *  Calculate the point from which to perform the final kicking movement
    */
   Eigen::Vector3d calcKickWindupPoint();
+
+  Eigen::Vector3d calcKickPoint();
+
 
   /**
    * Choose with which foot the kick should be performed

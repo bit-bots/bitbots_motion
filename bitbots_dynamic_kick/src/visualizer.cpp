@@ -20,6 +20,8 @@ Visualizer::Visualizer(const std::string &base_topic) :
       /* queue_size */ 5, /* latch */ true);
   windup_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_windup_point",
       /* queue_size */ 5, /* latch */ true);
+  kick_point_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_point",
+      /* queue_size */ 5, /* latch */ true);
   debug_publisher_ = node_handle_.advertise<KickDebug>(base_topic_ + "debug",
       /* queue_size */ 5, /* latch */ false);
 }
@@ -81,6 +83,21 @@ void Visualizer::displayWindupPoint(const Eigen::Vector3d &kick_windup_point, co
   marker.color.g = 1;
 
   windup_publisher_.publish(marker);
+}
+
+void Visualizer::displayKickPoint(const Eigen::Vector3d &kick_point, const std::string &support_foot_frame) {
+  if (kick_point_publisher_.getNumSubscribers() == 0)
+    return;
+
+  tf2::Vector3 tf_kick_point;
+  tf2::convert(kick_point, tf_kick_point);
+  visualization_msgs::Marker marker = getMarker(tf_kick_point, support_foot_frame);
+
+  marker.ns = marker_ns_;
+  marker.id = MarkerIDs::RECEIVED_GOAL;
+  marker.color.g = 1;
+
+  kick_point_publisher_.publish(marker);
 }
 
 void Visualizer::publishGoals(const KickPositions &positions,

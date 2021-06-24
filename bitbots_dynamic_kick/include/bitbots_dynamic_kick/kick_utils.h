@@ -19,6 +19,7 @@ struct KickGoals {
   Eigen::Quaterniond kick_direction;
   double kick_speed = 0;
   Eigen::Isometry3d trunk_to_base_footprint;
+  double ball_radius;
 };
 
 enum KickPhase {

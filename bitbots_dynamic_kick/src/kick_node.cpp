@@ -12,6 +12,7 @@ KickNode::KickNode(const std::string &ns) :
   private_node_handle_.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
   private_node_handle_.param<std::string>("r_toe_frame", r_toe_frame_, "r_toe");
   private_node_handle_.param<std::string>("l_toe_frame", l_toe_frame_, "l_toe");
+  private_node_handle_.param<double>("ball_radius", ball_radius_, 0.07);
 
   unstable_config_ = getUnstableConfig();
 
@@ -42,14 +43,14 @@ KickNode::KickNode(const std::string &ns) :
 
 void KickNode::copLCallback(const geometry_msgs::PointStamped &cop) {
   if (cop.header.frame_id != l_toe_frame_) {
-    ROS_ERROR_STREAM("cop_l not in " << l_toe_frame_ << " frame! Stabilizing will not work.");
+    ROS_ERROR_THROTTLE(10, "cop_l not in correct frame! Stabilizing will not work.");
   }
   stabilizer_.cop_left = cop.point;
 }
 
 void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
   if (cop.header.frame_id != r_toe_frame_) {
-    ROS_ERROR_STREAM("cop_r not in " << r_toe_frame_ << " frame! Stabilizing will not work.");
+    ROS_ERROR_THROTTLE(10, "cop_r not in correct frame! Stabilizing will not work.");
   }
   stabilizer_.cop_right = cop.point;
 }
@@ -110,9 +111,9 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.move_trunk_time = config.move_trunk_time;
   params.raise_foot_time = config.raise_foot_time;
   params.move_to_ball_time = config.move_to_ball_time;
+  params.low_time = config.low_time;
   params.kick_time = config.kick_time;
   params.move_back_time = config.move_back_time;
-  ROS_WARN_STREAM(params.move_to_ball_time);
   params.lower_foot_time = config.lower_foot_time;
   params.move_trunk_back_time = config.move_trunk_back_time;
   params.stabilizing_point_x = config.stabilizing_point_x;
@@ -123,6 +124,8 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.foot_rise_lower = config.foot_rise_lower;
   params.foot_rise_kick = config.foot_rise_kick;
   params.earlier_time = config.earlier_time;
+  params.low_x = config.low_x;
+  params.low_x_speed = config.low_x_speed;
   engine_.setParams(params);
 
   stabilizer_.useCop(config.use_center_of_pressure);
@@ -167,11 +170,13 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
   tf2::convert(goal_msg.kick_direction, goals.kick_direction);
   goals.kick_speed = goal_msg.kick_speed;
   goals.trunk_to_base_footprint = trunk_to_base_footprint;
+  goals.ball_radius = ball_radius_;
   engine_.setGoals(goals);
 
   /* visualization */
   visualizer_.displayReceivedGoal(goal_msg);
   visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
+  visualizer_.displayKickPoint(engine_.getKickPoint(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
   visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
   visualizer_.displayTrunkSplines(engine_.getTrunkSplines(), (engine_.isLeftKick() ? r_toe_frame_ : l_toe_frame_));
 

@@ -83,7 +83,7 @@ if __name__ == "__main__":
     goal.header.stamp = rospy.Time.now()
     frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
     goal.header.frame_id = frame_prefix + "base_footprint"
-    goal.ball_position.x = 0.2
+    goal.ball_position.x = 0.1
     goal.ball_position.y = args.ball_y
     goal.ball_position.z = 0
     goal.unstable = args.unstable
