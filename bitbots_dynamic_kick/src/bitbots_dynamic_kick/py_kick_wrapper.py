@@ -82,6 +82,15 @@ class PyKick:
         step = self.py_kick_wrapper.step(dt, to_cpp(joint_state))
         return from_cpp(step, JointCommand)
 
+    def get_torque_command(self) -> JointCommand:
+        """
+        Get the torque command that belongs to the last joint command returned by step()
+
+        :return: Returns the joint torque command for the next position of the kick. Empty JointCommand if no torque control is used.
+        """
+        result = self.py_kick_wrapper.get_torque_command()
+        return from_cpp(result, JointCommand)
+
     def get_progress(self) -> float:
         """Returns the progress of the kick, between 0 and 1 where 1 is finished."""
         return self.py_kick_wrapper.get_progress()
