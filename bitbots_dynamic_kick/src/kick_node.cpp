@@ -117,8 +117,6 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.stabilizing_point_x = config.stabilizing_point_x;
   params.stabilizing_point_y = config.stabilizing_point_y;
   params.choose_foot_corridor_width = config.choose_foot_corridor_width;
-  params.foot_rise_windup = config.foot_rise_windup;
-  params.windup_pitch = config.windup_pitch;
   params.hip_time = config.hip_time;
   params.knee_time = config.knee_time;
   params.ankle_time = config.ankle_time;
@@ -340,19 +338,18 @@ bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::Join
     }
   }
 
-  std::vector<double> windup_positions;
-  if (engine_.isLeftKick()) {
-    windup_positions = {-windup_hip_ * M_PI / 180, windup_knee_ * M_PI / 180, windup_ankle_ * M_PI / 180};
-  } else {
-    windup_positions = {windup_hip_ * M_PI / 180, -windup_knee_ * M_PI / 180, -windup_ankle_ * M_PI / 180};
-  }
   // change joint position goals for windup
   if (engine_.getPhase() == KickPhase::WINDUP) {
+    std::vector<double> windup_positions;
+    if (engine_.isLeftKick()) {
+      windup_positions = {-windup_hip_ * M_PI / 180, windup_knee_ * M_PI / 180, windup_ankle_ * M_PI / 180};
+    } else {
+      windup_positions = {windup_hip_ * M_PI / 180, -windup_knee_ * M_PI / 180, -windup_ankle_ * M_PI / 180};
+    }
     for (size_t i = command.joint_names.size(); i-- > 0;) {
       auto it = std::find(joints.begin(), joints.end(), command.joint_names[i]);
       if (it != joints.end()) {
         int index = std::distance(joints.begin(), it);
-        ROS_WARN("hi");
         command.positions[i] = windup_positions[index];
       }
     }
