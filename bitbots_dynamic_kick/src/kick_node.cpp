@@ -117,7 +117,6 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.stabilizing_point_x = config.stabilizing_point_x;
   params.stabilizing_point_y = config.stabilizing_point_y;
   params.choose_foot_corridor_width = config.choose_foot_corridor_width;
-  params.hip_time = config.hip_time;
   params.knee_time = config.knee_time;
   params.ankle_time = config.ankle_time;
   engine_.setParams(params);
