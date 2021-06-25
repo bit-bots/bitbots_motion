@@ -346,9 +346,13 @@ bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::Join
   if (engine_.getPhase() == KickPhase::WINDUP) {
     std::vector<double> windup_positions;
     if (engine_.isLeftKick()) {
-      windup_positions = {-windup_hip_ * M_PI / 180, windup_knee_ * M_PI / 180, windup_ankle_ * M_PI / 180};
+      joints.emplace_back("LHipRoll");
+      joints.emplace_back("LAnkleRoll");
+      windup_positions = {-windup_hip_ * M_PI / 180, windup_knee_ * M_PI / 180, windup_ankle_ * M_PI / 180, 0, 0};
     } else {
-      windup_positions = {windup_hip_ * M_PI / 180, -windup_knee_ * M_PI / 180, -windup_ankle_ * M_PI / 180};
+      joints.emplace_back("RHipRoll");
+      joints.emplace_back("RAnkleRoll");
+      windup_positions = {windup_hip_ * M_PI / 180, -windup_knee_ * M_PI / 180, -windup_ankle_ * M_PI / 180, 0, 0};
     }
     for (size_t i = command.joint_names.size(); i-- > 0;) {
       auto it = std::find(joints.begin(), joints.end(), command.joint_names[i]);

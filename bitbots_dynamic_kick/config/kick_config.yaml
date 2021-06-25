@@ -2,29 +2,6 @@
 
 # Distances and positions
 engine_rate: 500
-foot_rise: 0.2
-foot_distance: 0.2
-kick_windup_distance: 0.29
-trunk_height: 0.39
-trunk_roll: 0.37
-trunk_pitch: -0.136135681655558
-trunk_yaw: 0.0
-
-
-windup_hip: 45
-windup_knee: 70
-windup: -25
-
-# Timings
-move_trunk_time: 0.56
-raise_foot_time: 0.7
-move_to_ball_time: 0.3
-kick_time: 0.32
-move_back_time: 0.07
-lower_foot_time: 0.06
-move_trunk_back_time: 0.08
-knee_time: 0.5
-ankle_time: 0.5
 
 
 # Decisions
@@ -32,8 +9,31 @@ choose_foot_corridor_width: 0.4
 
 ### Stabilizer ###
 use_center_of_pressure: false
-stabilizing_point_x: -0.02
-stabilizing_point_y: -0.02
+
+ankle_time: 0.01
+ball_x: 0.17
+foot_distance: 0.2
+foot_rise: 0.15
+goal_x: 0.1
+kick_speed: 5.59
+kick_time: 0.02
+kick_windup_distance: 0.57
+knee_time: 0.0
+lower_foot_time: 0.01
+move_back_time: 0.01
+move_to_ball_time: 0.26
+move_trunk_back_time: 0.25
+move_trunk_time: 0.82
+raise_foot_time: 0.73
+stabilizing_point_x: -0.025
+stabilizing_point_y: 0.01
+trunk_height: 0.42
+trunk_pitch: 0
+trunk_roll: 0.2
+trunk_yaw: 0
+windup_ankle: 30.0
+windup_hip: 30.0
+windup_knee: 120.0
 
 # these values are used only if use_center_of_pressure is true
 pid_x/p: 0.2

@@ -191,7 +191,7 @@ if __name__ == "__main__":
         request = SetObjectPositionRequest()
         request.position.x = ball_x
         request.position.y = ball_y
-        request.position.z = 0.04
+        request.position.z = 0.08
         response = set_ball_pos_service(request)
 
     sys.stdout.write("\x1b[A")
