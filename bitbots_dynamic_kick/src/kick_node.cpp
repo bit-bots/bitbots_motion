@@ -380,9 +380,9 @@ bitbots_msgs::JointCommand KickNode::getJointTorqueCommand(std::vector<std::stri
   command.joint_names = joints;
   std::vector<double> torques;
   if (engine_.isLeftKick()) {
-    torques = {10, -12.9, 10};
+    torques = {10, -12.9, -10};
   } else {
-    torques = {-10, 12.9, -10};
+    torques = {-10, 12.9, 10};
   }
   std::vector<double>::const_iterator first = torques.begin();
   std::vector<double>::const_iterator last = torques.begin() + joints.size();
