@@ -84,6 +84,11 @@ class KickNode {
    * Whether the left foot is the current kicking foot
    */
   bool isLeftKick();
+
+  /**
+   * Get the current torque control command (empty if no torque control is to be used)
+   */
+  bitbots_msgs::JointCommand getTorqueCommand();
  private:
   ros::NodeHandle node_handle_;
   ros::NodeHandle private_node_handle_;
@@ -147,6 +152,12 @@ class KickNode {
    * Get the config for the unstable kick
    */
   DynamicKickConfig getUnstableConfig();
+
+  /**
+   * Get the names of the joints that are supposed to be controlled with torque control
+   */
+  std::vector<std::string> getJointsForTorqueControl();
+
 
   void copLCallback(const geometry_msgs::PointStamped &cop);
   void copRCallback(const geometry_msgs::PointStamped &cop);

@@ -263,26 +263,7 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
         break;
       }
 
-      std::vector<std::string> joints;
-      if (engine_.getPhase() == KickPhase::ANKLE || engine_.getPhase() == KickPhase::WINDUP) {
-        if (engine_.isLeftKick()) {
-          joints = {"LHipPitch", "LKnee", "LAnklePitch"};
-        } else {
-          joints = {"RHipPitch", "RKnee", "RAnklePitch"};
-        }
-      } else if (engine_.getPhase() == KickPhase::KNEE) {
-        if (engine_.isLeftKick()) {
-          joints = {"LHipPitch", "LKnee"};
-        } else {
-          joints = {"RHipPitch", "RKnee"};
-        }
-      } else if (engine_.getPhase() == KickPhase::HIP) {
-        if (engine_.isLeftKick()) {
-          joints = {"LHipPitch"};
-        } else {
-          joints = {"RHipPitch"};
-        }
-      }
+      std::vector<std::string> joints = getJointsForTorqueControl();
 
       joint_goal_publisher_.publish(getJointCommand(motor_goals.value(), joints));
       if (engine_.getPhase() == KickPhase::HIP || engine_.getPhase() == KickPhase::KNEE
@@ -293,6 +274,30 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
       sleep(0.0001);
     }
   }
+}
+
+std::vector<std::string> KickNode::getJointsForTorqueControl() {
+  std::vector<std::string> joints;
+  if (engine_.getPhase() == KickPhase::ANKLE || engine_.getPhase() == KickPhase::WINDUP) {
+    if (engine_.isLeftKick()) {
+      joints = {"LHipPitch", "LKnee", "LAnklePitch"};
+    } else {
+      joints = {"RHipPitch", "RKnee", "RAnklePitch"};
+    }
+  } else if (engine_.getPhase() == KickPhase::KNEE) {
+    if (engine_.isLeftKick()) {
+      joints = {"LHipPitch", "LKnee"};
+    } else {
+      joints = {"RHipPitch", "RKnee"};
+    }
+  } else if (engine_.getPhase() == KickPhase::HIP) {
+    if (engine_.isLeftKick()) {
+      joints = {"LHipPitch"};
+    } else {
+      joints = {"RHipPitch"};
+    }
+  }
+  return joints;
 }
 
 bitbots_splines::JointGoals KickNode::kickStep(double dt) {
@@ -396,7 +401,18 @@ bitbots_msgs::JointCommand KickNode::stepWrapper(double dt) {
   /* with stabilizing, we can call some callbacks here */
   bitbots_splines::JointGoals goals = kickStep(dt);
   if (engine_.getPercentDone() < 100) {
-    return getJointCommand(goals, {});//todo torque commands
+    std::vector<std::string> joints = getJointsForTorqueControl();
+    return getJointCommand(goals, joints);
+  } else {
+    return {};
+  }
+}
+
+bitbots_msgs::JointCommand KickNode::getTorqueCommand() {
+  std::vector<std::string> joints = getJointsForTorqueControl();
+  if (engine_.getPhase() == KickPhase::HIP || engine_.getPhase() == KickPhase::KNEE
+      || engine_.getPhase() == KickPhase::ANKLE) {
+    return getJointTorqueCommand(joints);
   } else {
     return {};
   }

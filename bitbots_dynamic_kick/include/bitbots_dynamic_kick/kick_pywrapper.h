@@ -16,6 +16,7 @@ class PyKickWrapper {
  public:
   explicit PyKickWrapper(std::string ns);
   moveit::py_bindings_tools::ByteString step(double dt, const std::string &joint_state_str);
+  moveit::py_bindings_tools::ByteString get_torque_command();
   bool set_goal(const std::string &goal_str, const std::string &joint_state_str);
   double get_progress();
   void set_params(boost::python::object params);

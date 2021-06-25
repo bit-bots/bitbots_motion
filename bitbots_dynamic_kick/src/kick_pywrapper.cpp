@@ -44,6 +44,11 @@ moveit::py_bindings_tools::ByteString PyKickWrapper::step(double dt, const std::
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
+moveit::py_bindings_tools::ByteString PyKickWrapper::get_torque_command() {
+  std::string result = to_python<bitbots_msgs::JointCommand>(kick_node_->getTorqueCommand());
+  return moveit::py_bindings_tools::serializeMsg(result);
+}
+
 void PyKickWrapper::set_params(const boost::python::object params) {
   using namespace boost::python;
 
@@ -116,6 +121,7 @@ BOOST_PYTHON_MODULE (py_dynamic_kick) {
   class_<PyKickWrapper>("PyKickWrapper", init<std::string>())
       .def("set_goal", &PyKickWrapper::set_goal)
       .def("step", &PyKickWrapper::step)
+      .def("get_torque_command", &PyKickWrapper::get_torque_command)
       .def("get_progress", &PyKickWrapper::get_progress)
       .def("set_params", &PyKickWrapper::set_params)
       .def("get_trunk_pose", &PyKickWrapper::get_trunk_pose)
