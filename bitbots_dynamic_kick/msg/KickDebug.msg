@@ -4,14 +4,13 @@ uint8 INITIAL=0
 uint8 MOVE_TRUNK=1
 uint8 RAISE_FOOT=2
 uint8 WINDUP=3
-uint8 KICK=4
-uint8 HIP=5
-uint8 KNEE=6
-uint8 ANKLE=7
-uint8 MOVE_BACK=8
-uint8 LOWER_FOOT=9
-uint8 MOVE_TRUNK_BACK=10
-uint8 DONE=11
+uint8 HIP=4
+uint8 KNEE=5
+uint8 ANKLE=6
+uint8 MOVE_BACK=7
+uint8 LOWER_FOOT=8
+uint8 MOVE_TRUNK_BACK=9
+uint8 DONE=10
 
 float64 engine_time
 uint8 engine_phase

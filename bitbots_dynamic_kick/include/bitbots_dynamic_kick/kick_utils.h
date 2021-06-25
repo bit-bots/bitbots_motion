@@ -26,7 +26,6 @@ enum KickPhase {
   MOVE_TRUNK = KickDebug::MOVE_TRUNK,
   RAISE_FOOT = KickDebug::RAISE_FOOT,
   WINDUP = KickDebug::WINDUP,
-  KICK = KickDebug::KICK,
   HIP = KickDebug::HIP,
   KNEE = KickDebug::KNEE,
   ANKLE = KickDebug::ANKLE,

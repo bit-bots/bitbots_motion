@@ -124,6 +124,10 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.ankle_time = config.ankle_time;
   engine_.setParams(params);
 
+  windup_hip_ = config.windup_hip;
+  windup_knee_ = config.windup_knee;
+  windup_ankle_ = config.windup_ankle;
+
   stabilizer_.useCop(config.use_center_of_pressure);
 
   VisualizationParams viz_params = VisualizationParams();
@@ -263,16 +267,29 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
       }
 
       std::vector<std::string> joints;
-      if (engine_.getPhase() == KickPhase::ANKLE) {
-        joints = {"LHipPitch", "LKnee", "LAnklePitch"};
-      }else if (engine_.getPhase() == KickPhase::KNEE){
-        joints = {"LHipPitch", "LKnee"};
-      }else if (engine_.getPhase() == KickPhase::HIP){
-        joints = {"LHipPitch"};
+      if (engine_.getPhase() == KickPhase::ANKLE || engine_.getPhase() == KickPhase::WINDUP) {
+        if (engine_.isLeftKick()) {
+          joints = {"LHipPitch", "LKnee", "LAnklePitch"};
+        } else {
+          joints = {"RHipPitch", "RKnee", "RAnklePitch"};
+        }
+      } else if (engine_.getPhase() == KickPhase::KNEE) {
+        if (engine_.isLeftKick()) {
+          joints = {"LHipPitch", "LKnee"};
+        } else {
+          joints = {"RHipPitch", "RKnee"};
+        }
+      } else if (engine_.getPhase() == KickPhase::HIP) {
+        if (engine_.isLeftKick()) {
+          joints = {"LHipPitch"};
+        } else {
+          joints = {"RHipPitch"};
+        }
       }
 
       joint_goal_publisher_.publish(getJointCommand(motor_goals.value(), joints));
-      if (engine_.getPhase() == KickPhase::HIP || engine_.getPhase() == KickPhase::KNEE || engine_.getPhase() == KickPhase::ANKLE) {
+      if (engine_.getPhase() == KickPhase::HIP || engine_.getPhase() == KickPhase::KNEE
+          || engine_.getPhase() == KickPhase::ANKLE) {
         joint_goal_publisher_.publish(getJointTorqueCommand(joints));
       }
     } else {
@@ -297,7 +314,8 @@ bitbots_splines::JointGoals KickNode::kickStep(double dt) {
   return motor_goals;
 }
 
-bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::JointGoals &goals, std::vector<std::string> joints) {
+bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::JointGoals &goals,
+                                                     std::vector<std::string> joints) {
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
@@ -311,12 +329,31 @@ bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::Join
   command.joint_names = goals.first;
   command.positions = goals.second;
 
-  if (engine_.getPhase() == KickPhase::HIP) {
-    // hacky power kick
+  // remove joint position goals for kick
+  if (engine_.getPhase() == KickPhase::HIP || engine_.getPhase() == KickPhase::KNEE
+      || engine_.getPhase() == KickPhase::ANKLE) {
     for (size_t i = command.joint_names.size(); i-- > 0;) {
-      if (std::find(joints.begin(), joints.end(), command.joint_names[i]) != joints.end()){
+      if (std::find(joints.begin(), joints.end(), command.joint_names[i]) != joints.end()) {
         command.joint_names.erase(command.joint_names.begin() + i);
         command.positions.erase(command.positions.begin() + i);
+      }
+    }
+  }
+
+  std::vector<double> windup_positions;
+  if (engine_.isLeftKick()) {
+    windup_positions = {-windup_hip_ * M_PI / 180, windup_knee_ * M_PI / 180, windup_ankle_ * M_PI / 180};
+  } else {
+    windup_positions = {windup_hip_ * M_PI / 180, -windup_knee_ * M_PI / 180, -windup_ankle_ * M_PI / 180};
+  }
+  // change joint position goals for windup
+  if (engine_.getPhase() == KickPhase::WINDUP) {
+    for (size_t i = command.joint_names.size(); i-- > 0;) {
+      auto it = std::find(joints.begin(), joints.end(), command.joint_names[i]);
+      if (it != joints.end()) {
+        int index = std::distance(joints.begin(), it);
+        ROS_WARN("hi");
+        command.positions[i] = windup_positions[index];
       }
     }
   }
@@ -336,7 +373,12 @@ bitbots_msgs::JointCommand KickNode::getJointTorqueCommand(std::vector<std::stri
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
   command.joint_names = joints;
-  std::vector<double> torques = {10, -12.9, 10};
+  std::vector<double> torques;
+  if (engine_.isLeftKick()) {
+    torques = {10, -12.9, 10};
+  } else {
+    torques = {-10, 12.9, -10};
+  }
   std::vector<double>::const_iterator first = torques.begin();
   std::vector<double>::const_iterator last = torques.begin() + joints.size();
   std::vector<double> newVec(first, last);

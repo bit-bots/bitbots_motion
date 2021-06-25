@@ -311,11 +311,11 @@ KickPhase KickEngine::getPhase() const {
     return KickPhase::RAISE_FOOT;
   else if (time_ <= phase_timings_.windup)
     return KickPhase::WINDUP;
-  else if (time_ <= phase_timings_.kick)
+  else if (time_ <= phase_timings_.windup + params_.knee_time)
     return KickPhase::HIP;
-  else if (time_ <= phase_timings_.kick + params_.knee_time)
+  else if (time_ <= phase_timings_.windup + params_.ankle_time)
     return KickPhase::KNEE;
-  else if (time_ <= phase_timings_.kick + params_.ankle_time)
+  else if (time_ <= phase_timings_.kick)
     return KickPhase::ANKLE;
   else if (time_ <= phase_timings_.move_back)
     return KickPhase::MOVE_BACK;

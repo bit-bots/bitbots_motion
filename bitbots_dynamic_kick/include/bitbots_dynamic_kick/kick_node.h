@@ -108,6 +108,10 @@ class KickNode {
   DynamicKickConfig unstable_config_;
   std::optional<DynamicKickConfig> normal_config_;
 
+  double windup_hip_;
+  double windup_knee_;
+  double windup_ankle_;
+
   std::string base_link_frame_, base_footprint_frame_, l_sole_frame_, r_sole_frame_;
 
     /**
