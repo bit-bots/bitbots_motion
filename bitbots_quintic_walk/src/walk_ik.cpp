@@ -64,12 +64,13 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
 void WalkIK::reset() {
   // we have to set some good initial position in the goal state, since we are using a gradient
   // based method. Otherwise, the first step will be not correct
-  std::vector<std::string> names_vec = {"LHipPitch", "LKnee", "LAnklePitch", "RHipPitch", "RKnee", "RAnklePitch"};
-  std::vector<double> pos_vec = {0.7, 1.0, -0.4, -0.7, -1.0, 0.4};
-  for (size_t i = 0; i < names_vec.size(); i++) {
+  //TODO THIS SHOULD NOT GO ON MASTER
+  //std::vector<std::string> names_vec = {"LHipPitch", "LKnee", "LAnklePitch", "RHipPitch", "RKnee", "RAnklePitch"};
+  //std::vector<double> pos_vec = {0.7, 1.0, -0.4, -0.7, -1.0, 0.4};
+  /*for (size_t i = 0; i < names_vec.size(); i++) {
     // besides its name, this method only changes a single joint position...
     goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
-  }
+  }*/
 }
 
 void WalkIK::setIKTimeout(double timeout) {
