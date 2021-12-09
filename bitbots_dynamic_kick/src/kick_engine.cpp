@@ -44,10 +44,6 @@ void KickEngine::setGoals(const KickGoals &goals) {
   }
 
   /* Plan new splines according to new goal */
-  ROS_ERROR_STREAM("trunk flying foot");
-  ROS_ERROR_STREAM(trunk_to_flying_foot.translation());
-  ROS_ERROR_STREAM("trunk hip inv");
-  ROS_ERROR_STREAM(trunk_to_flying_hip.inverse().translation());
   calcSplines(trunk_to_flying_hip.inverse() * trunk_to_flying_foot, trunk_frame);
 }
 

@@ -61,14 +61,14 @@ moveRobotBindings = {
 }
 
 moveBallBindings = {
-    't': (1, 0, 0),
-    'g': (-1, 0, 0),
-    'f': (0, 1, 0),
-    'h': (0, -1, 0),
-    'T': (10, 0, 0),
-    'G': (-10, 0, 0),
-    'F': (0, 10, 0),
-    'H': (0, -10, 0),
+    't': (1, 0),
+    'g': (-1, 0),
+    'f': (0, 1),
+    'h': (0, -1),
+    'T': (10, 0),
+    'G': (-10, 0),
+    'F': (0, 10),
+    'H': (0, -10),
 }
 
 settings = termios.tcgetattr(sys.stdin)
@@ -86,45 +86,17 @@ if __name__ == "__main__":
     rospy.init_node('dynamic_kick_interactive_test', anonymous=True)
     print("Waiting for kick server and simulation")
 
+
     def done_cb(state, result):
         return
-        print('Action completed: ', end='')
-        if state == GoalStatus.PENDING:
-            print('Pending')
-        elif state == GoalStatus.ACTIVE:
-            print('Active')
-        elif state == GoalStatus.PREEMPTED:
-            print('Preempted')
-        elif state == GoalStatus.SUCCEEDED:
-            print('Succeeded')
-        elif state == GoalStatus.ABORTED:
-            print('Aborted')
-        elif state == GoalStatus.REJECTED:
-            print('Rejected')
-        elif state == GoalStatus.PREEMPTING:
-            print('Preempting')
-        elif state == GoalStatus.RECALLING:
-            print('Recalling')
-        elif state == GoalStatus.RECALLED:
-            print('Recalled')
-        elif state == GoalStatus.LOST:
-            print('Lost')
-        else:
-            print('Unknown state', state)
-        print(str(result))
 
 
     def active_cb():
         return
-        print("Server accepted action")
 
 
     def feedback_cb(feedback):
         return
-        if len(sys.argv) > 1 and sys.argv[1] == '--feedback':
-            print('Feedback')
-            print(feedback)
-            print()
 
 
     sys.stdout.flush()
@@ -194,6 +166,7 @@ if __name__ == "__main__":
         request.position.z = 0.04
         response = set_ball_pos_service(request)
 
+
     sys.stdout.write("\x1b[A")
     sys.stdout.write("\x1b[A")
     print(msg)
@@ -238,14 +211,7 @@ if __name__ == "__main__":
         elif (key == '\x03'):
             break
 
-
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
+        sys.stdout.write("\x1b[A" * 7)
         print(
             f"robot_x:    {round(robot_x, 2)}         ball_x:     {round(ball_x, 2)} \n"
             f"robot_y:    {round(robot_y, 2)}         ball_x:     {round(ball_y, 2)} \n"

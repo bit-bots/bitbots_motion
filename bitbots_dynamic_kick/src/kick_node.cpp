@@ -10,6 +10,8 @@ KickNode::KickNode(const std::string &ns) :
     robot_model_loader_(ns + "robot_description", false) {
   private_node_handle_.param<std::string>("base_link_frame", base_link_frame_, "base_link");
   private_node_handle_.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
+  private_node_handle_.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
+  private_node_handle_.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
   private_node_handle_.param<std::string>("r_toe_frame", r_toe_frame_, "r_toe");
   private_node_handle_.param<std::string>("l_toe_frame", l_toe_frame_, "l_toe");
   private_node_handle_.param<std::string>("r_hip_frame", r_hip_frame_, "r_upper_leg");
@@ -48,14 +50,14 @@ KickNode::KickNode(const std::string &ns) :
 }
 
 void KickNode::copLCallback(const geometry_msgs::PointStamped &cop) {
-  if (cop.header.frame_id != l_toe_frame_) {
+  if (cop.header.frame_id != l_sole_frame_) {
     ROS_ERROR_THROTTLE(10, "cop_l not in correct frame! Stabilizing will not work.");
   }
   stabilizer_.cop_left = cop.point;
 }
 
 void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
-  if (cop.header.frame_id != r_toe_frame_) {
+  if (cop.header.frame_id != r_sole_frame_) {
     ROS_ERROR_THROTTLE(10, "cop_r not in correct frame! Stabilizing will not work.");
   }
   stabilizer_.cop_right = cop.point;
