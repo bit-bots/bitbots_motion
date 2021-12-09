@@ -12,13 +12,68 @@ from time import sleep
 from actionlib_msgs.msg import GoalStatus
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SetObjectPoseRequest, SetObjectPositionRequest
 from geometry_msgs.msg import Vector3, Quaternion
-from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
+from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback, JointCommand
 from visualization_msgs.msg import Marker
 
 from tf.transformations import quaternion_from_euler
 import sys, select, termios, tty
 
 showing_feedback = False
+
+
+__ids__ = [
+    "HeadPan",
+    "HeadTilt",
+    "LShoulderPitch",
+    "LShoulderRoll",
+    "LElbow",
+    "RShoulderPitch",
+    "RShoulderRoll",
+    "RElbow",
+    "LHipYaw",
+    "LHipRoll",
+    "LHipPitch",
+    "LKnee",
+    "LAnklePitch",
+    "LAnkleRoll",
+    "RHipYaw",
+    "RHipRoll",
+    "RHipPitch",
+    "RKnee",
+    "RAnklePitch",
+    "RAnkleRoll"
+]
+__velocity__ = 5.0
+__accelerations__ = -1.0
+__max_currents__ = -1.0
+
+walkready = JointCommand(
+    joint_names=__ids__,
+    velocities=[__velocity__] * len(__ids__),
+    accelerations=[__accelerations__] * len(__ids__),
+    max_currents=[__max_currents__] * len(__ids__),
+    positions=[
+        0.0,  # HeadPan
+        0.0,  # HeadTilt
+        math.radians(75.27),  # LShoulderPitch
+        0.0,  # LShoulderRoll
+        math.radians(35.86),  # LElbow
+        math.radians(-75.58),  # RShoulderPitch
+        0.0,  # RShoulderRoll
+        math.radians(-36.10),  # RElbow
+        -0.0112,  # LHipYaw
+        0.0615,  # LHipRoll
+        0.4732,  # LHipPitch
+        1.0058,  # LKnee
+        -0.4512,  # LAnklePitch
+        0.0625,  # LAnkleRoll
+        0.0112,  # RHipYaw
+        -0.0615,  # RHipRoll
+        -0.4732,  # RHipPitch
+        -1.0059,  # RKnee
+        0.4512,  # RAnklePitch
+        -0.0625,  # RAnkleRoll
+    ])
 
 msg = """
 BitBots Interactive Kick Test                              
@@ -36,7 +91,7 @@ v/V: set speed command
 
 <: execute kick
 r: reset robot and ball
-
+R: set robot to walkready
 
 
 
@@ -119,6 +174,8 @@ if __name__ == "__main__":
     turn_speed_step = 0.01
 
     frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
+
+    joint_pub = rospy.Publisher("DynamixelController/command", JointCommand, queue_size=1)
 
 
     def generate_kick_goal(x, y, direction, speed, unstable=False):
@@ -208,6 +265,10 @@ if __name__ == "__main__":
         elif key == "r":
             set_robot_pose()
             set_ball_position()
+        elif key =="R":
+            # play walkready animation
+            walkready.header.stamp = rospy.Time.now()
+            joint_pub.publish(walkready)
         elif (key == '\x03'):
             break
 
