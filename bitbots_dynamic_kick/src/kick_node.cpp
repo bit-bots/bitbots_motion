@@ -114,7 +114,6 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.move_trunk_time = config.move_trunk_time;
   params.raise_foot_time = config.raise_foot_time;
   params.move_to_ball_time = config.move_to_ball_time;
-  params.low_time = config.low_time;
   params.kick_time = config.kick_time;
   params.move_back_time = config.move_back_time;
   params.lower_foot_time = config.lower_foot_time;
@@ -122,13 +121,6 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.stabilizing_point_x = config.stabilizing_point_x;
   params.stabilizing_point_y = config.stabilizing_point_y;
   params.choose_foot_corridor_width = config.choose_foot_corridor_width;
-  params.foot_extra_forward = config.foot_extra_forward;
-  params.foot_pitch = config.foot_pitch;
-  params.foot_rise_lower = config.foot_rise_lower;
-  params.foot_rise_kick = config.foot_rise_kick;
-  params.earlier_time = config.earlier_time;
-  params.low_x = config.low_x;
-  params.low_x_speed = config.low_x_speed;
 
   engine_.setParams(params);
 

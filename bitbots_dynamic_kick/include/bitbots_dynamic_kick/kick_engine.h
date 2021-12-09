@@ -45,19 +45,6 @@ struct KickParams {
 
   double choose_foot_corridor_width;
 
-  double foot_pitch;
-  double foot_rise_lower;
-  double foot_rise_kick;
-
-  double earlier_time;
-  double low_time;
-  double low_x;
-  double low_x_speed;
-
-  double rise_length;
-  double windup_length;
-  double windup_alpha;
-
 
 };
 
@@ -69,7 +56,6 @@ class PhaseTimings {
   double move_trunk;
   double raise_foot;
   double windup;
-  double low;
   double kick;
   double move_back;
   double lower_foot;
