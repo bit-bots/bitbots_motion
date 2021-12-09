@@ -134,7 +134,6 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   bitbots_splines::PoseSpline getTrunkSplines() const;
 
   void setParams(KickParams params);
-  void setTrunkToHip(Eigen::Isometry3d trunk_to_hip_l, Eigen::Isometry3d trunk_to_hip_r);
 
   /**
    * Get the current phase of the engine
@@ -165,8 +164,6 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   Eigen::Vector3d kick_point_;
   robot_state::RobotStatePtr current_state_;
   double ball_radius_;
-  Eigen::Isometry3d trunk_to_hip_l_;
-  Eigen::Isometry3d trunk_to_hip_r_;
   /**
    *  Calculate splines for a complete kick whereby is_left_kick_ should already be set correctly
    *
@@ -207,7 +204,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   /**
    * Transform then goal into our support_foots frame
-   * @param hip_frame Name of the flying foots hip frame, meaning where to transform to
+   * @param support_foot_frame Name of the support foots frame, meaning where to transform to
    * @param trunk_to_base_footprint Pose of the base_footprint relative to the trunk
    * @param ball_position Position of the ball
    * @param kick_direction Direction in which to kick the ball
@@ -216,7 +213,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    * @throws tf2::TransformException when goal cannot be transformed into support_foot_frame
    */
   std::pair<Eigen::Vector3d, Eigen::Quaterniond> transformGoal(
-      const std::string &hip_frame,
+      const std::string &support_foot_frame,
       const Eigen::Isometry3d &trunk_to_base_footprint,
       const Eigen::Vector3d &ball_position,
       const Eigen::Quaterniond &kick_direction);

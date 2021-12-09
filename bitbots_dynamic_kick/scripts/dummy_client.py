@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, math.radians(args.kick_direction)))
 
-    goal.kick_speed = 6.7 if args.unstable else 0.0
+    goal.kick_speed = 6.7 if args.unstable else 1.0
 
     """marker = Marker()
     marker.header.stamp = goal.ball_position.header.stamp

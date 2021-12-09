@@ -16,9 +16,6 @@ foot_rise_kick: 0.08
 low_x: 0
 low_x_speed: 10
 
-rise_length: 0.35
-windup_length: 0.35
-windup_alpha: 0.2
 
 # Timings
 move_trunk_time: 0.56

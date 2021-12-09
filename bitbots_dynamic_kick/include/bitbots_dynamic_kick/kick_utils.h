@@ -12,7 +12,6 @@ struct KickPositions {
   bool is_left_kick = true;
   Eigen::Isometry3d trunk_pose;
   Eigen::Isometry3d flying_foot_pose;
-  Eigen::Isometry3d flying_foot_leg_space;
   bool cop_support_point = false;
   double engine_time;
 };

@@ -160,8 +160,6 @@ void Visualizer::publishGoals(const KickPositions &positions,
   msg.flying_foot_pose_ik_result = tf2::toMsg(flying_foot_pose_ik_result);
   msg.flying_foot_position_ik_offset = tf2::toMsg(flying_foot_position_ik_offset);
 
-  msg.flying_foot_pose_goal_leg_space = tf2::toMsg(positions.flying_foot_leg_space);
-
   debug_publisher_.publish(msg);
 }
 

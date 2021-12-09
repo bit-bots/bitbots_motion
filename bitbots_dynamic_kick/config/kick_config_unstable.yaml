@@ -2,6 +2,7 @@ unstable:
   foot_distance: 0.21
   foot_rise: 0.11
   kick_speed: 6.7
+  low_time: 0.2
   kick_time: 0.11
   kick_windup_distance: 0.33
   lower_foot_time: 0.16
@@ -16,5 +17,13 @@ unstable:
   trunk_pitch: -0.488692190558412
   trunk_roll: 0.102974425867665
   trunk_yaw: 0.296705972839036
+
+  foot_extra_forward: 0.00
+  foot_pitch: 0.00
+  foot_rise_lower: 0.04
+  foot_rise_kick: 0.08
+  low_x: 0
+  low_x_speed: 10
+
   use_center_of_pressure: false
   foot_x_extra: 0.00

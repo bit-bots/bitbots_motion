@@ -30,10 +30,6 @@ void KickEngine::setGoals(const KickGoals &goals) {
 
   Eigen::Isometry3d trunk_to_flying_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "l_toe" : "r_toe");
   Eigen::Isometry3d trunk_to_support_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "r_toe" : "l_toe");
-  Eigen::Isometry3d
-      trunk_to_flying_hip = current_state_->getGlobalLinkTransform(is_left_kick_ ? "l_upper_leg" : "r_upper_leg");
-  // no rotation
-  trunk_to_flying_hip.matrix().block<3,3>(0,0) = Eigen::Matrix3d::Identity();
 
   /* get the start position of the trunk relative to the support foot */
   Eigen::Isometry3d trunk_frame;
@@ -44,33 +40,16 @@ void KickEngine::setGoals(const KickGoals &goals) {
   }
 
   /* Plan new splines according to new goal */
-  calcSplines(trunk_to_flying_hip.inverse() * trunk_to_flying_foot, trunk_frame);
+  calcSplines(trunk_to_support_foot.inverse() * trunk_to_flying_foot, trunk_frame);
 }
 
-void KickEngine::setTrunkToHip(Eigen::Isometry3d trunk_to_hip_l, Eigen::Isometry3d trunk_to_hip_r) {
-  trunk_to_hip_l_ = trunk_to_hip_l;
-  trunk_to_hip_r_ = trunk_to_hip_r;
-}
 
 KickPositions KickEngine::update(double dt) {
   /* Only do an actual update when splines are present */
   KickPositions positions;
   /* Get should-be pose from planned splines (every axis) at current time */
   positions.trunk_pose = tf2::transformToEigen(tf2::toMsg(trunk_spline_.getTfTransform(time_)));
-  // for debug
-  positions.flying_foot_leg_space = tf2::transformToEigen(tf2::toMsg(flying_foot_spline_.getTfTransform(time_)));
-  // this is in leg space and in hip frame. transform
-  Eigen::Isometry3d trunk_to_hip;
-  if (is_left_kick_) {
-    trunk_to_hip = trunk_to_hip_l_;
-  } else {
-    trunk_to_hip = trunk_to_hip_r_;
-  }
-  Eigen::Isometry3d
-      hip_to_flying_goal = tf2::transformToEigen(tf2::toMsg(flying_foot_spline_.getTfTransformLegSpace(time_)));
-  Eigen::Isometry3d trunk_to_flying_foot_goal = trunk_to_hip * hip_to_flying_goal;
-
-  positions.flying_foot_pose = trunk_to_flying_foot_goal;
+  positions.flying_foot_pose = tf2::transformToEigen(tf2::toMsg(flying_foot_spline_.getTfTransform(time_)));
   positions.is_left_kick = is_left_kick_;
   positions.engine_time = time_;
 
@@ -109,7 +88,8 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   phase_timings_.move_trunk = 0 + params_.move_trunk_time;
   phase_timings_.raise_foot = phase_timings_.move_trunk + params_.raise_foot_time;
   phase_timings_.windup = phase_timings_.raise_foot + params_.move_to_ball_time;
-  phase_timings_.kick = phase_timings_.windup + params_.kick_time;
+  phase_timings_.low = phase_timings_.windup + params_.low_time;
+  phase_timings_.kick = phase_timings_.low + params_.kick_time;
   phase_timings_.move_back = phase_timings_.kick + params_.move_back_time;
   phase_timings_.lower_foot = phase_timings_.move_back + params_.lower_foot_time;
   phase_timings_.move_trunk_back = phase_timings_.lower_foot + params_.move_trunk_back_time;
@@ -131,45 +111,45 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   ROS_WARN_STREAM(target_yaw);
 
   /* Flying foot position */
-  Eigen::Vector3d start_leg_space = bitbots_splines::cartesian2leg(flying_foot_pose.translation());
-  Eigen::Vector3d windup_leg_space = bitbots_splines::cartesian2leg(windup_point_);
-  Eigen::Vector3d kick_leg_space = bitbots_splines::cartesian2leg(kick_point_);
-  ROS_WARN_STREAM(flying_foot_pose.translation());
-  ROS_WARN_STREAM(bitbots_splines::leg2cartesian(start_leg_space));
-
-  // length
-  flying_foot_spline_.x()->addPoint(0, start_leg_space.x());
-  /*flying_foot_spline_.x()->addPoint(phase_timings_.move_trunk, start_leg_space.x());
-  flying_foot_spline_.x()->addPoint(phase_timings_.raise_foot, params_.rise_length);
-  flying_foot_spline_.x()->addPoint(phase_timings_.windup, params_.windup_length);
+  flying_foot_spline_.x()->addPoint(0, flying_foot_pose.translation().x());
+  flying_foot_spline_.x()->addPoint(phase_timings_.move_trunk, 0);
+  flying_foot_spline_.x()->addPoint(phase_timings_.raise_foot, 0);
+  flying_foot_spline_.x()->addPoint(phase_timings_.windup, windup_point_.x(), 0);
+  flying_foot_spline_.x()->addPoint(phase_timings_.low,
+                                    params_.low_x * cos(target_yaw),
+                                    params_.low_x_speed * cos(target_yaw));
   flying_foot_spline_.x()->addPoint(phase_timings_.kick,
-                                    kick_leg_space.x(),
+                                    kick_point_.x() + params_.foot_extra_forward * cos(target_yaw),
                                     speed_vector.x() * kick_speed_);
-  flying_foot_spline_.x()->addPoint(phase_timings_.move_back, params_.rise_length);
-  flying_foot_spline_.x()->addPoint(phase_timings_.lower_foot, start_leg_space.x());*/
-  flying_foot_spline_.x()->addPoint(phase_timings_.move_trunk_back, start_leg_space.x());
+  flying_foot_spline_.x()->addPoint(phase_timings_.move_back, 0);
+  flying_foot_spline_.x()->addPoint(phase_timings_.lower_foot, 0);
+  flying_foot_spline_.x()->addPoint(phase_timings_.move_trunk_back, 0);
 
-  // alpha
-  flying_foot_spline_.y()->addPoint(0, start_leg_space.y());
-  /*flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk, start_leg_space.y());
-  flying_foot_spline_.y()->addPoint(phase_timings_.raise_foot, start_leg_space.y());
-  flying_foot_spline_.y()->addPoint(phase_timings_.windup, params_.windup_alpha);
+  flying_foot_spline_.y()->addPoint(0, flying_foot_pose.translation().y());
+  flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk, flying_foot_pose.translation().y());
+  flying_foot_spline_.y()->addPoint(phase_timings_.raise_foot, kick_foot_sign * params_.foot_distance);
+  flying_foot_spline_.y()->addPoint(phase_timings_.windup, windup_point_.y(), 0);
+  //flying_foot_spline_.y()->addPoint(phase_timings_.low,
+  //                                  kick_foot_sign * params_.foot_distance + params_.low_x * sin(target_yaw),
+  //                                  params_.low_x_speed * sin(target_yaw));
   flying_foot_spline_.y()->addPoint(phase_timings_.kick,
-                                    kick_leg_space.y(),
+                                    kick_point_.y() + params_.foot_extra_forward * sin(target_yaw),
                                     speed_vector.y() * kick_speed_);
-  flying_foot_spline_.y()->addPoint(phase_timings_.move_back, start_leg_space.y());
-  flying_foot_spline_.y()->addPoint(phase_timings_.lower_foot, start_leg_space.y());*/
-  flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk_back, start_leg_space.y());
+  flying_foot_spline_.y()->addPoint(phase_timings_.move_back, kick_foot_sign * params_.foot_distance);
+  flying_foot_spline_.y()->addPoint(phase_timings_.lower_foot, kick_foot_sign * params_.foot_distance);
+  flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk_back, flying_foot_pose.translation().y());
 
-  // beta
-  flying_foot_spline_.z()->addPoint(0, start_leg_space.z()); //todo set this based on direction
-  /*flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk, start_leg_space.z());
-  flying_foot_spline_.z()->addPoint(phase_timings_.raise_foot, start_leg_space.z());
-  flying_foot_spline_.z()->addPoint(phase_timings_.windup, start_leg_space.z());
-  flying_foot_spline_.z()->addPoint(phase_timings_.kick, start_leg_space.z());
-  flying_foot_spline_.z()->addPoint(phase_timings_.move_back, start_leg_space.z());
-  flying_foot_spline_.z()->addPoint(phase_timings_.lower_foot, start_leg_space.z());*/
-  flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk_back, start_leg_space.z());
+
+  flying_foot_spline_.z()->addPoint(0, flying_foot_pose.translation().z());
+  flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk, 0);
+  flying_foot_spline_.z()->addPoint(phase_timings_.raise_foot, params_.foot_rise);
+  flying_foot_spline_.z()->addPoint(phase_timings_.windup, params_.foot_rise);
+  flying_foot_spline_.z()->addPoint(phase_timings_.low, params_.foot_rise_lower);
+  flying_foot_spline_.z()->addPoint(phase_timings_.kick - params_.earlier_time, params_.foot_rise_kick);
+  flying_foot_spline_.z()->addPoint(phase_timings_.kick, params_.foot_rise_kick);
+  flying_foot_spline_.z()->addPoint(phase_timings_.move_back, params_.foot_rise_kick);
+  flying_foot_spline_.z()->addPoint(phase_timings_.lower_foot, 0.4 * params_.foot_rise_kick);
+  flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk_back, 0);
 
   /* Flying foot orientation */
   /* Get euler angles for foot rotation */
@@ -181,16 +161,18 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   flying_foot_spline_.roll()->addPoint(0, start_r);
   flying_foot_spline_.roll()->addPoint(phase_timings_.raise_foot, start_r);
   flying_foot_spline_.roll()->addPoint(phase_timings_.windup, -sin(target_yaw) * params_.foot_pitch);
-  flying_foot_spline_.roll()->addPoint(phase_timings_.windup + (phase_timings_.kick - phase_timings_.windup) / 2,
-                                       -sin(target_yaw) * params_.foot_pitch);
+  flying_foot_spline_.roll()->addPoint(phase_timings_.windup + (phase_timings_.kick - phase_timings_.windup) /2,
+                                    - sin(target_yaw) * params_.foot_pitch);
+  flying_foot_spline_.roll()->addPoint(phase_timings_.kick - params_.earlier_time, 0);
   flying_foot_spline_.roll()->addPoint(phase_timings_.kick, 0);
   flying_foot_spline_.roll()->addPoint(phase_timings_.move_trunk_back, start_r);
 
   flying_foot_spline_.pitch()->addPoint(0, start_p);
   flying_foot_spline_.pitch()->addPoint(phase_timings_.raise_foot, start_p);
   flying_foot_spline_.pitch()->addPoint(phase_timings_.windup, cos(target_yaw) * params_.foot_pitch);
-  flying_foot_spline_.pitch()->addPoint(phase_timings_.windup + (phase_timings_.kick - phase_timings_.windup) / 2,
-                                        cos(target_yaw) * params_.foot_pitch);
+  flying_foot_spline_.pitch()->addPoint(phase_timings_.windup + (phase_timings_.kick - phase_timings_.windup) /2,
+                                    cos(target_yaw) * params_.foot_pitch);
+  flying_foot_spline_.pitch()->addPoint(phase_timings_.kick - params_.earlier_time, 0);
   flying_foot_spline_.pitch()->addPoint(phase_timings_.kick, 0);
   flying_foot_spline_.pitch()->addPoint(phase_timings_.move_trunk_back, start_p);
 
@@ -201,7 +183,6 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   flying_foot_spline_.yaw()->addPoint(phase_timings_.move_back, start_y);
   flying_foot_spline_.yaw()->addPoint(phase_timings_.move_trunk_back, start_y);
 
-  //ROS_WARN_STREAM(flying_foot_spline_.getDebugString());
 
   /* Stabilizing point */
   trunk_spline_.x()->addPoint(0, 0);
@@ -264,13 +245,10 @@ std::pair<Eigen::Vector3d, Eigen::Quaterniond> KickEngine::transformGoal(
   Eigen::Isometry3d base_footprint_to_support_foot = trunk_to_base_footprint.inverse() * trunk_to_support_foot;
   /* now, apply the transforms. Because of eigen, the transform has to be on the left hand side, therefore it must be inversed */
   Eigen::Vector3d ball_transformed = base_footprint_to_support_foot.inverse() * ball_position;
-  Eigen::Matrix3d
-      kick_direction_transformed_matrix = (base_footprint_to_support_foot.inverse() * kick_direction).rotation();
+  Eigen::Matrix3d kick_direction_transformed_matrix = (base_footprint_to_support_foot.inverse() * kick_direction).rotation();
   Eigen::Quaterniond kick_direction_transformed(kick_direction_transformed_matrix);
   return std::make_pair(ball_transformed, kick_direction_transformed);
 }
-
-
 
 Eigen::Vector3d KickEngine::calcKickWindupPoint() {
   /* retrieve yaw from kick_direction_ */
