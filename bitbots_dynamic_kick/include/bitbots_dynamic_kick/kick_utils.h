@@ -4,6 +4,8 @@
 #include <Eigen/Geometry>
 #include <bitbots_dynamic_kick/KickDebug.h>
 
+#define M_TAU M_PI * 2
+
 namespace bitbots_dynamic_kick {
 
 struct KickPositions {
@@ -19,6 +21,7 @@ struct KickGoals {
   Eigen::Quaterniond kick_direction;
   double kick_speed = 0;
   Eigen::Isometry3d trunk_to_base_footprint;
+  double ball_radius;
 };
 
 enum KickPhase {

@@ -5,6 +5,7 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <bitbots_splines/pose_spline.h>
+#include <bitbots_splines/utils.h>
 
 namespace bitbots_splines {
 
@@ -47,7 +48,8 @@ class AbstractVisualizer {
    */
   visualization_msgs::MarkerArray getPath(bitbots_splines::PoseSpline &spline,
                                      const std::string &frame,
-                                     const double smoothness) {
+                                     const double smoothness,
+                                     bool use_leg_space=false) {
 
     visualization_msgs::MarkerArray marker_array;
     visualization_msgs::Marker base_marker;
@@ -73,10 +75,18 @@ class AbstractVisualizer {
     // Taking the manually set points is not enough because velocities and accelerations influence the curve
     for (double i = first_time; i <= last_time; i += (last_time - first_time) / smoothness) {
       geometry_msgs::Point point;
-      point.x = spline.x()->pos(i);
-      point.y = spline.y()->pos(i);
-      point.z = spline.z()->pos(i);
-
+      if (use_leg_space){
+        Eigen::Vector3d leg(spline.x()->pos(i), spline.y()->pos(i), spline.z()->pos(i));
+          Eigen::Vector3d cartesian = leg2cartesian(leg);
+          tf2::Vector3 pos;
+          point.x = cartesian.x();
+          point.y = cartesian.y();
+          point.z = cartesian.z();
+      }else{
+        point.x = spline.x()->pos(i);
+        point.y = spline.y()->pos(i);
+        point.z = spline.z()->pos(i);
+      }
       path_marker.points.push_back(point);
     }
     marker_array.markers.push_back(path_marker);

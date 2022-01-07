@@ -5,6 +5,7 @@
 #include <optional>
 #include <Eigen/Geometry>
 #include <rot_conv/rot_conv.h>
+#include <bitbots_splines/utils.h>
 #include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/position_spline.h>
 #include <bitbots_splines/abstract_engine.h>
@@ -25,6 +26,7 @@ struct KickParams {
   double foot_distance;
   double kick_windup_distance;
   double trunk_height;
+  double foot_extra_forward;
 
   double trunk_roll;
   double trunk_pitch;
@@ -42,6 +44,8 @@ struct KickParams {
   double stabilizing_point_y;
 
   double choose_foot_corridor_width;
+
+
 };
 
 /**
@@ -78,8 +82,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    * @param ball_position Position of the ball
    * @param kick_direction Direction into which to kick the ball
    * @param kick_speed Speed with which to kick the ball
-   * @param r_foot_pose Current pose of right foot in l_sole frame
-   * @param l_foot_pose Current pose of left foot in r_sole frame
+   * @param r_foot_pose Current pose of right foot in l_toe frame
+   * @param l_foot_pose Current pose of left foot in r_toe frame
    *
    * @throws tf2::TransformException when goal cannot be converted into needed tf frames
    */
@@ -124,6 +128,10 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   Eigen::Vector3d getWindupPoint();
 
+  Eigen::Vector3d getKickPoint();
+  Eigen::Vector3d getBallPoint();
+
+
   /**
    * Set a pointer to the current state of the robot, updated from joint states
    */
@@ -139,8 +147,9 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   KickParams params_;
   PhaseTimings phase_timings_;
   Eigen::Vector3d windup_point_;
+  Eigen::Vector3d kick_point_;
   robot_state::RobotStatePtr current_state_;
-
+  double ball_radius_;
   /**
    *  Calculate splines for a complete kick whereby is_left_kick_ should already be set correctly
    *
@@ -153,6 +162,9 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *  Calculate the point from which to perform the final kicking movement
    */
   Eigen::Vector3d calcKickWindupPoint();
+
+  Eigen::Vector3d calcKickPoint();
+
 
   /**
    * Choose with which foot the kick should be performed

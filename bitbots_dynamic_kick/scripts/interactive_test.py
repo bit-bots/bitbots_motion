@@ -12,13 +12,68 @@ from time import sleep
 from actionlib_msgs.msg import GoalStatus
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SetObjectPoseRequest, SetObjectPositionRequest
 from geometry_msgs.msg import Vector3, Quaternion
-from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
+from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback, JointCommand
 from visualization_msgs.msg import Marker
 
 from tf.transformations import quaternion_from_euler
 import sys, select, termios, tty
 
 showing_feedback = False
+
+
+__ids__ = [
+    "HeadPan",
+    "HeadTilt",
+    "LShoulderPitch",
+    "LShoulderRoll",
+    "LElbow",
+    "RShoulderPitch",
+    "RShoulderRoll",
+    "RElbow",
+    "LHipYaw",
+    "LHipRoll",
+    "LHipPitch",
+    "LKnee",
+    "LAnklePitch",
+    "LAnkleRoll",
+    "RHipYaw",
+    "RHipRoll",
+    "RHipPitch",
+    "RKnee",
+    "RAnklePitch",
+    "RAnkleRoll"
+]
+__velocity__ = 5.0
+__accelerations__ = -1.0
+__max_currents__ = -1.0
+
+walkready = JointCommand(
+    joint_names=__ids__,
+    velocities=[__velocity__] * len(__ids__),
+    accelerations=[__accelerations__] * len(__ids__),
+    max_currents=[__max_currents__] * len(__ids__),
+    positions=[
+        0.0,  # HeadPan
+        0.0,  # HeadTilt
+        math.radians(75.27),  # LShoulderPitch
+        0.0,  # LShoulderRoll
+        math.radians(35.86),  # LElbow
+        math.radians(-75.58),  # RShoulderPitch
+        0.0,  # RShoulderRoll
+        math.radians(-36.10),  # RElbow
+        -0.0112,  # LHipYaw
+        0.0615,  # LHipRoll
+        0.4732,  # LHipPitch
+        1.0058,  # LKnee
+        -0.4512,  # LAnklePitch
+        0.0625,  # LAnkleRoll
+        0.0112,  # RHipYaw
+        -0.0615,  # RHipRoll
+        -0.4732,  # RHipPitch
+        -1.0059,  # RKnee
+        0.4512,  # RAnklePitch
+        -0.0625,  # RAnkleRoll
+    ])
 
 msg = """
 BitBots Interactive Kick Test                              
@@ -36,7 +91,7 @@ v/V: set speed command
 
 <: execute kick
 r: reset robot and ball
-
+R: set robot to walkready
 
 
 
@@ -61,14 +116,14 @@ moveRobotBindings = {
 }
 
 moveBallBindings = {
-    't': (1, 0, 0),
-    'g': (-1, 0, 0),
-    'f': (0, 1, 0),
-    'h': (0, -1, 0),
-    'T': (10, 0, 0),
-    'G': (-10, 0, 0),
-    'F': (0, 10, 0),
-    'H': (0, -10, 0),
+    't': (1, 0),
+    'g': (-1, 0),
+    'f': (0, 1),
+    'h': (0, -1),
+    'T': (10, 0),
+    'G': (-10, 0),
+    'F': (0, 10),
+    'H': (0, -10),
 }
 
 settings = termios.tcgetattr(sys.stdin)
@@ -86,45 +141,17 @@ if __name__ == "__main__":
     rospy.init_node('dynamic_kick_interactive_test', anonymous=True)
     print("Waiting for kick server and simulation")
 
+
     def done_cb(state, result):
         return
-        print('Action completed: ', end='')
-        if state == GoalStatus.PENDING:
-            print('Pending')
-        elif state == GoalStatus.ACTIVE:
-            print('Active')
-        elif state == GoalStatus.PREEMPTED:
-            print('Preempted')
-        elif state == GoalStatus.SUCCEEDED:
-            print('Succeeded')
-        elif state == GoalStatus.ABORTED:
-            print('Aborted')
-        elif state == GoalStatus.REJECTED:
-            print('Rejected')
-        elif state == GoalStatus.PREEMPTING:
-            print('Preempting')
-        elif state == GoalStatus.RECALLING:
-            print('Recalling')
-        elif state == GoalStatus.RECALLED:
-            print('Recalled')
-        elif state == GoalStatus.LOST:
-            print('Lost')
-        else:
-            print('Unknown state', state)
-        print(str(result))
 
 
     def active_cb():
         return
-        print("Server accepted action")
 
 
     def feedback_cb(feedback):
         return
-        if len(sys.argv) > 1 and sys.argv[1] == '--feedback':
-            print('Feedback')
-            print(feedback)
-            print()
 
 
     sys.stdout.flush()
@@ -147,6 +174,8 @@ if __name__ == "__main__":
     turn_speed_step = 0.01
 
     frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
+
+    joint_pub = rospy.Publisher("DynamixelController/command", JointCommand, queue_size=1)
 
 
     def generate_kick_goal(x, y, direction, speed, unstable=False):
@@ -194,6 +223,7 @@ if __name__ == "__main__":
         request.position.z = 0.04
         response = set_ball_pos_service(request)
 
+
     sys.stdout.write("\x1b[A")
     sys.stdout.write("\x1b[A")
     print(msg)
@@ -235,17 +265,14 @@ if __name__ == "__main__":
         elif key == "r":
             set_robot_pose()
             set_ball_position()
+        elif key =="R":
+            # play walkready animation
+            walkready.header.stamp = rospy.Time.now()
+            joint_pub.publish(walkready)
         elif (key == '\x03'):
             break
 
-
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
-        sys.stdout.write("\x1b[A")
+        sys.stdout.write("\x1b[A" * 7)
         print(
             f"robot_x:    {round(robot_x, 2)}         ball_x:     {round(ball_x, 2)} \n"
             f"robot_y:    {round(robot_y, 2)}         ball_x:     {round(ball_y, 2)} \n"

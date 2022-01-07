@@ -12,6 +12,9 @@ KickNode::KickNode(const std::string &ns) :
   private_node_handle_.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
   private_node_handle_.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
   private_node_handle_.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
+  private_node_handle_.param<std::string>("r_toe_frame", r_toe_frame_, "r_toe");
+  private_node_handle_.param<std::string>("l_toe_frame", l_toe_frame_, "l_toe");
+  private_node_handle_.param<double>("ball_radius", ball_radius_, 0.07);
 
   unstable_config_ = getUnstableConfig();
 
@@ -23,13 +26,14 @@ KickNode::KickNode(const std::string &ns) :
     exit(1);
   }
   stabilizer_.setRobotModel(kinematic_model);
-  ik_.init(kinematic_model);
 
   /* this debug variable represents the goal state of the robot, i.e. what the ik goals are */
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
   /* this variable represents the current state of the robot, retrieved from joint states */
   current_state_.reset(new robot_state::RobotState(kinematic_model));
   engine_.setRobotState(current_state_);
+
+  ik_.init(kinematic_model);
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
   support_foot_publisher_ =
@@ -42,14 +46,14 @@ KickNode::KickNode(const std::string &ns) :
 
 void KickNode::copLCallback(const geometry_msgs::PointStamped &cop) {
   if (cop.header.frame_id != l_sole_frame_) {
-    ROS_ERROR_STREAM("cop_l not in " << l_sole_frame_ << " frame! Stabilizing will not work.");
+    ROS_ERROR_THROTTLE(10, "cop_l not in correct frame! Stabilizing will not work.");
   }
   stabilizer_.cop_left = cop.point;
 }
 
 void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
   if (cop.header.frame_id != r_sole_frame_) {
-    ROS_ERROR_STREAM("cop_r not in " << r_sole_frame_ << " frame! Stabilizing will not work.");
+    ROS_ERROR_THROTTLE(10, "cop_r not in correct frame! Stabilizing will not work.");
   }
   stabilizer_.cop_right = cop.point;
 }
@@ -117,6 +121,7 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   params.stabilizing_point_x = config.stabilizing_point_x;
   params.stabilizing_point_y = config.stabilizing_point_y;
   params.choose_foot_corridor_width = config.choose_foot_corridor_width;
+
   engine_.setParams(params);
 
   stabilizer_.useCop(config.use_center_of_pressure);
@@ -149,11 +154,11 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
   ik_.reset();
 
   /* get trunk to base footprint transform, assume left and right foot are next to each other (same x and z) */
-  Eigen::Isometry3d trunk_to_l_sole = current_state_->getGlobalLinkTransform("l_sole");
-  Eigen::Isometry3d trunk_to_r_sole = current_state_->getGlobalLinkTransform("r_sole");
-  Eigen::Isometry3d trunk_to_base_footprint = trunk_to_l_sole;
+  Eigen::Isometry3d trunk_to_l_toe = current_state_->getGlobalLinkTransform("l_toe");
+  Eigen::Isometry3d trunk_to_r_toe = current_state_->getGlobalLinkTransform("r_toe");
+  Eigen::Isometry3d trunk_to_base_footprint = trunk_to_l_toe;
   trunk_to_base_footprint.translation().y() =
-      (trunk_to_r_sole.translation().y() + trunk_to_l_sole.translation().y()) / 2.0;
+      (trunk_to_r_toe.translation().y() + trunk_to_l_toe.translation().y()) / 2.0;
 
   /* Set engines goal_msg and start calculating */
   KickGoals goals;
@@ -161,20 +166,23 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
   tf2::convert(goal_msg.kick_direction, goals.kick_direction);
   goals.kick_speed = goal_msg.kick_speed;
   goals.trunk_to_base_footprint = trunk_to_base_footprint;
+  goals.ball_radius = ball_radius_;
   engine_.setGoals(goals);
 
   /* visualization */
   visualizer_.displayReceivedGoal(goal_msg);
-  visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? r_sole_frame_ : l_sole_frame_);
-  visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? r_sole_frame_ : l_sole_frame_);
-  visualizer_.displayTrunkSplines(engine_.getTrunkSplines(), (engine_.isLeftKick() ? r_sole_frame_ : l_sole_frame_));
+  visualizer_.displayBallPoint(engine_.getBallPoint(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
+  visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
+  visualizer_.displayKickPoint(engine_.getKickPoint(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
+  visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? r_toe_frame_ : l_toe_frame_);
+  visualizer_.displayTrunkSplines(engine_.getTrunkSplines(), (engine_.isLeftKick() ? r_toe_frame_ : l_toe_frame_));
 
   return true;
 }
 
 void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
-  ROS_INFO("Accepted new goal");
+  ROS_INFO("Kick accepted new goal");
 
   /* get transform to base_footprint */
   geometry_msgs::TransformStamped goal_frame_to_base_footprint =

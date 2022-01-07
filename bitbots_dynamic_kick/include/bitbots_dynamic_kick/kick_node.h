@@ -108,8 +108,9 @@ class KickNode {
   robot_state::RobotStatePtr current_state_;
   DynamicKickConfig unstable_config_;
   std::optional<DynamicKickConfig> normal_config_;
+  double ball_radius_;
 
-  std::string base_link_frame_, base_footprint_frame_, l_sole_frame_, r_sole_frame_;
+  std::string base_link_frame_, base_footprint_frame_, l_sole_frame_, r_sole_frame_, l_toe_frame_, r_toe_frame_;
 
     /**
    * Do main loop in which KickEngine::update() gets called repeatedly.

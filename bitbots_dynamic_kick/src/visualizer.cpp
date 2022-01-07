@@ -20,6 +20,10 @@ Visualizer::Visualizer(const std::string &base_topic) :
       /* queue_size */ 5, /* latch */ true);
   windup_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_windup_point",
       /* queue_size */ 5, /* latch */ true);
+  kick_point_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_point",
+      /* queue_size */ 5, /* latch */ true);
+  ball_point_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "ball_point",
+      /* queue_size */ 5, /* latch */ true);
   debug_publisher_ = node_handle_.advertise<KickDebug>(base_topic_ + "debug",
       /* queue_size */ 5, /* latch */ false);
 }
@@ -33,7 +37,7 @@ void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines,
   if (foot_spline_publisher_.getNumSubscribers() == 0)
     return;
 
-  visualization_msgs::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness);
+  visualization_msgs::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness, true);
   path.markers[0].color.g = 1;
 
   foot_spline_publisher_.publish(path);
@@ -83,6 +87,36 @@ void Visualizer::displayWindupPoint(const Eigen::Vector3d &kick_windup_point, co
   windup_publisher_.publish(marker);
 }
 
+void Visualizer::displayKickPoint(const Eigen::Vector3d &kick_point, const std::string &support_foot_frame) {
+  if (kick_point_publisher_.getNumSubscribers() == 0)
+    return;
+
+  tf2::Vector3 tf_kick_point;
+  tf2::convert(kick_point, tf_kick_point);
+  visualization_msgs::Marker marker = getMarker(tf_kick_point, support_foot_frame);
+
+  marker.ns = marker_ns_;
+  marker.id = MarkerIDs::RECEIVED_GOAL;
+  marker.color.b = 1;
+
+  kick_point_publisher_.publish(marker);
+}
+
+void Visualizer::displayBallPoint(const Eigen::Vector3d &ball_point, const std::string &support_foot_frame) {
+  if (kick_point_publisher_.getNumSubscribers() == 0)
+    return;
+
+  tf2::Vector3 tf_ball_point;
+  tf2::convert(ball_point, tf_ball_point);
+  visualization_msgs::Marker marker = getMarker(tf_ball_point, support_foot_frame);
+
+  marker.ns = marker_ns_;
+  marker.id = MarkerIDs::RECEIVED_GOAL;
+  marker.color.r = 1;
+
+  ball_point_publisher_.publish(marker);
+}
+
 void Visualizer::publishGoals(const KickPositions &positions,
                               const KickPositions &stabilized_positions,
                               const robot_state::RobotStatePtr &robot_state,
@@ -94,11 +128,11 @@ void Visualizer::publishGoals(const KickPositions &positions,
 
   std::string support_foot_frame, flying_foot_frame;
   if (positions.is_left_kick) {
-    support_foot_frame = "r_sole";
-    flying_foot_frame = "l_sole";
+    support_foot_frame = "r_toe";
+    flying_foot_frame = "l_toe";
   } else {
-    support_foot_frame = "l_sole";
-    flying_foot_frame = "r_sole";
+    support_foot_frame = "l_toe";
+    flying_foot_frame = "r_toe";
   }
 
   /* Derive positions from robot state */

@@ -47,6 +47,11 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 
   void displayWindupPoint(const Eigen::Vector3d &kick_windup_point, const std::string &support_foot_frame);
 
+  void displayKickPoint(const Eigen::Vector3d &kick_windup_point, const std::string &support_foot_frame);
+
+  void displayBallPoint(const Eigen::Vector3d &ball_point, const std::string &support_foot_frame);
+
+
   void publishGoals(const KickPositions &positions,
                     const KickPositions &stabilized_positions,
                     const robot_state::RobotStatePtr &robot_state,
@@ -58,6 +63,8 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
   ros::Publisher foot_spline_publisher_;
   ros::Publisher trunk_spline_publisher_;
   ros::Publisher windup_publisher_;
+  ros::Publisher kick_point_publisher_;
+  ros::Publisher ball_point_publisher_;
   ros::Publisher debug_publisher_;
   std::string base_topic_;
   const std::string marker_ns_ = "bitbots_dynamic_kick";

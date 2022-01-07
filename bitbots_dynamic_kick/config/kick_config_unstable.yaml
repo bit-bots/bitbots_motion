@@ -16,4 +16,8 @@ unstable:
   trunk_pitch: -0.488692190558412
   trunk_roll: 0.102974425867665
   trunk_yaw: 0.296705972839036
+
+  foot_extra_forward: 0.00
+
   use_center_of_pressure: false
+  foot_x_extra: 0.00

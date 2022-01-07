@@ -83,14 +83,14 @@ if __name__ == "__main__":
     goal.header.stamp = rospy.Time.now()
     frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
     goal.header.frame_id = frame_prefix + "base_footprint"
-    goal.ball_position.x = 0.2
+    goal.ball_position.x = 0.1
     goal.ball_position.y = args.ball_y
     goal.ball_position.z = 0
     goal.unstable = args.unstable
 
     goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, math.radians(args.kick_direction)))
 
-    goal.kick_speed = 6.7 if args.unstable else 1
+    goal.kick_speed = 6.7 if args.unstable else 1.0
 
     """marker = Marker()
     marker.header.stamp = goal.ball_position.header.stamp

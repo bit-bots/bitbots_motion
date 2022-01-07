@@ -18,8 +18,9 @@ void KickEngine::setGoals(const KickGoals &goals) {
   // TODO Internal state is dirty when goal transformation fails
 
   /* Save given goals because we reuse them later */
-  auto transformed_goal = transformGoal((is_left_kick_) ? "r_sole" : "l_sole",
+  auto transformed_goal = transformGoal((is_left_kick_) ? "r_toe" : "l_toe",
                                         goals.trunk_to_base_footprint, goals.ball_position, goals.kick_direction);
+  ball_radius_ = goals.ball_radius;
   ball_position_ = transformed_goal.first;
   kick_direction_ = transformed_goal.second;
   kick_direction_.normalize();
@@ -27,20 +28,21 @@ void KickEngine::setGoals(const KickGoals &goals) {
 
   time_ = 0;
 
-  Eigen::Isometry3d trunk_to_flying_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "l_sole" : "r_sole");
-  Eigen::Isometry3d trunk_to_support_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "r_sole" : "l_sole");
+  Eigen::Isometry3d trunk_to_flying_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "l_toe" : "r_toe");
+  Eigen::Isometry3d trunk_to_support_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "r_toe" : "l_toe");
 
   /* get the start position of the trunk relative to the support foot */
   Eigen::Isometry3d trunk_frame;
   if (is_left_kick_) {
-    trunk_frame = current_state_->getGlobalLinkTransform("r_sole").inverse();
+    trunk_frame = current_state_->getGlobalLinkTransform("r_toe").inverse();
   } else {
-    trunk_frame = current_state_->getGlobalLinkTransform("l_sole").inverse();
+    trunk_frame = current_state_->getGlobalLinkTransform("l_toe").inverse();
   }
 
   /* Plan new splines according to new goal */
   calcSplines(trunk_to_support_foot.inverse() * trunk_to_flying_foot, trunk_frame);
 }
+
 
 KickPositions KickEngine::update(double dt) {
   /* Only do an actual update when splines are present */
@@ -98,11 +100,13 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
     kick_foot_sign = -1;
   }
 
+  kick_point_ = calcKickPoint();
   windup_point_ = calcKickWindupPoint();
 
   /* build vector of speeds in each direction */
   double speed_yaw = rot_conv::EYawOfQuat(kick_direction_);
   Eigen::Vector3d speed_vector(cos(speed_yaw), sin(speed_yaw), 0);
+  double target_yaw = calcKickFootYaw();
 
   /* Flying foot position */
   flying_foot_spline_.x()->addPoint(0, flying_foot_pose.translation().x());
@@ -154,6 +158,7 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   flying_foot_spline_.yaw()->addPoint(phase_timings_.kick, target_y);
   flying_foot_spline_.yaw()->addPoint(phase_timings_.move_back, start_y);
   flying_foot_spline_.yaw()->addPoint(phase_timings_.move_trunk_back, start_y);
+
 
   /* Stabilizing point */
   trunk_spline_.x()->addPoint(0, 0);
@@ -232,9 +237,22 @@ Eigen::Vector3d KickEngine::calcKickWindupPoint() {
   /* take windup distance into account */
   vec *= -params_.kick_windup_distance;
 
-  /* add the ball position because the windup point is in support_foot_frame and not ball_frame */
-  vec += ball_position_;
+  /* add the kick position because the windup point is in support_foot_frame and not ball_frame */
+  vec += kick_point_;
 
+  vec.z() = params_.foot_rise;
+
+  return vec;
+}
+
+Eigen::Vector3d KickEngine::calcKickPoint() {
+  // calculate the point where we will hit the ball with the front of the foot
+  double yaw = rot_conv::EYawOfQuat(kick_direction_);
+  /* create a vector which points in the negative direction of kick_direction_ */
+  Eigen::Vector3d vec(cos(yaw), sin(yaw), 0);
+  vec.normalize();
+
+  vec = ball_position_ + vec * ball_radius_;
   vec.z() = params_.foot_rise;
 
   return vec;
@@ -328,6 +346,14 @@ void KickEngine::setParams(KickParams params) {
 
 Eigen::Vector3d KickEngine::getWindupPoint() {
   return windup_point_;
+}
+
+Eigen::Vector3d KickEngine::getKickPoint() {
+  return kick_point_;
+}
+
+Eigen::Vector3d KickEngine::getBallPoint() {
+  return ball_position_;
 }
 
 void KickEngine::setRobotState(robot_state::RobotStatePtr current_state) {
