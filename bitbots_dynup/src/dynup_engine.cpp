@@ -590,6 +590,37 @@ double DynupEngine::calcRiseSplines(double time) {
 
   // all positions relative to right foot
   // foot_trajectories_ are for left foot
+
+  // intermediate rise frame for more stability
+  time += params_["rise_intermediate_time"].get_value<double>();
+  l_foot_spline_.x()->addPoint(time, 0);
+  l_foot_spline_.y()->addPoint(time, params_["foot_distance"].get_value<double>());
+  l_foot_spline_.z()->addPoint(time, 0);
+  l_foot_spline_.roll()->addPoint(time, 0);
+  l_foot_spline_.pitch()->addPoint(time, 0);
+  l_foot_spline_.yaw()->addPoint(time, 0);
+
+  r_foot_spline_.x()->addPoint(time, -params_["trunk_x_final"].get_value<double>());
+  r_foot_spline_.y()->addPoint(time, -params_["foot_distance"].get_value<double>() / 2.0);
+  r_foot_spline_.z()->addPoint(time, -params_["trunk_intermediate_height"].get_value<double>());
+  r_foot_spline_.roll()->addPoint(time, 0);
+  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_["trunk_pitch"].get_value<double>() / 180);
+  r_foot_spline_.yaw()->addPoint(time, 0);
+
+
+  l_hand_spline_.x()->addPoint(time, 0);
+  l_hand_spline_.y()->addPoint(time, 0);
+  l_hand_spline_.z()->addPoint(time, params_["hand_walkready_height"].get_value<double>());
+  l_hand_spline_.roll()->addPoint(time, 0);
+  l_hand_spline_.pitch()->addPoint(time, params_["hand_walkready_pitch"].get_value<double>() * M_PI / 180);
+  l_hand_spline_.yaw()->addPoint(time, 0);
+  r_hand_spline_.x()->addPoint(time, 0);
+  r_hand_spline_.y()->addPoint(time, 0);
+  r_hand_spline_.z()->addPoint(time, params_["hand_walkready_height"].get_value<double>());
+  r_hand_spline_.roll()->addPoint(time, 0);
+  r_hand_spline_.pitch()->addPoint(time, params_["hand_walkready_pitch"].get_value<double>() * M_PI / 180);
+  r_hand_spline_.yaw()->addPoint(time, 0);
+
   time += params_["rise_time"].get_value<double>();
   l_foot_spline_.x()->addPoint(time, 0);
   l_foot_spline_.y()->addPoint(time, params_["foot_distance"].get_value<double>());
@@ -604,6 +635,7 @@ double DynupEngine::calcRiseSplines(double time) {
   r_foot_spline_.roll()->addPoint(time, 0);
   r_foot_spline_.pitch()->addPoint(time, M_PI * -params_["trunk_pitch"].get_value<double>() / 180);
   r_foot_spline_.yaw()->addPoint(time, 0);
+
 
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, 0);
