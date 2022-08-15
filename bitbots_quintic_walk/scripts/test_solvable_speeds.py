@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
+from deep_quintic.engine import WalkEngine
 
 from ament_index_python import get_package_share_directory
-from bitbots_moveit_bindings import set_moveit_parameters
 from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 from bitbots_utils.utils import load_moveit_parameter, get_parameters_from_ros_yaml
 from numpy import random
-from deep_quintic.engine import WalkEngine
 from geometry_msgs.msg import Twist
 
 def cmd_vel_to_twist(cmd_vel, stop=False):
@@ -21,8 +19,8 @@ def cmd_vel_to_twist(cmd_vel, stop=False):
     return cmd_vel_msg
 
 sim_name = "webots"
-robot_type = "wolfgang"
-cmd_vel_current_bounds = [(-0.5, 0.5), (-0.2, 0.2), (-2, 2)]
+robot_type = "mrl_hsl"
+cmd_vel_current_bounds = [(-0.6, 0.6), (-0.25, 0.25), (-4.0, 4.0)]
 experiment_number = 1000
 threshold = 0.0001
 
@@ -30,7 +28,7 @@ initRos()
 walk_parameters = get_parameters_from_ros_yaml("walking",
                                                 f"{get_package_share_directory('bitbots_quintic_walk')}/config/deep_quintic_{sim_name}_{robot_type}.yaml",
                                                 use_wildcard=True)
-moveit_parameters = load_moveit_parameter(robot_type)                                                
+moveit_parameters = load_moveit_parameter(robot_type)
 engine = WalkEngine("", walk_parameters + moveit_parameters)
 
 okay = 0

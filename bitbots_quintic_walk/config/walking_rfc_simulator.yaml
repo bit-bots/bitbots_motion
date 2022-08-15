@@ -50,9 +50,9 @@ walking:
       max_step_z: 1.0
       max_step_angular: 1.0
 
-      x_speed_multiplier: 1.35
-      y_speed_multiplier: 1.66
-      yaw_speed_multiplier: 1.66
+      x_speed_multiplier: 1.75
+      y_speed_multiplier: 1.5
+      yaw_speed_multiplier: 1.95
 
       imu_active: False
       imu_pitch_threshold: 0.19

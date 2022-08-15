@@ -62,9 +62,9 @@ walking:
       joint_min_effort: 3.0
       effort_phase_reset_active: False
 
-      x_speed_multiplier: 1.0
-      y_speed_multiplier: 1.0
-      yaw_speed_multiplier: 1.0
+      x_speed_multiplier: 2.1
+      y_speed_multiplier: 2.5
+      yaw_speed_multiplier: 2.1
 
 walk_pid_trunk_fused_pitch:
   ros__parameters:
