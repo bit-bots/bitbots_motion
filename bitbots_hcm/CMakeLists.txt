@@ -11,6 +11,7 @@ find_package(bitbots_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
+find_package(irobot_events_executor REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED)
 find_package(PythonLibs REQUIRED)
@@ -18,6 +19,10 @@ find_package(rclpy REQUIRED)
 find_package(ros2_python_extension REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-fvisibility=hidden)
+endif()
 
 include_directories(${PYTHON_INCLUDE_DIRS})
 set(SOURCES src/hcm.cpp)
@@ -31,6 +36,7 @@ ament_target_dependencies(HCM
     builtin_interfaces
     geometry_msgs
     humanoid_league_msgs
+    irobot_events_executor
     rclcpp
     ros2_python_extension
     sensor_msgs
