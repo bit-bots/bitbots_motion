@@ -1,5 +1,6 @@
 #include <pybind11/embed.h>
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <thread>
 #include <rclcpp/rclcpp.hpp>
@@ -14,7 +15,9 @@
 #include <ros2_python_extension/serialization.hpp>
 #include "std_msgs/msg/header.hpp"
 #include <rclcpp/executors/events_executor/events_executor.hpp>
-
+#include <bitbots_quintic_walk/walk_node.h>
+#include <sched.h>
+#include <unistd.h>
 
 using std::placeholders::_1;
 namespace py = pybind11;
@@ -33,6 +36,9 @@ public:
     this->get_parameter("visualization_active", visualization_active);
 
     current_state_ = humanoid_league_msgs::msg::RobotControlState::STARTUP;
+
+    counter_ = 0;
+    time_diffs = {};
 
     current_imu_ = sensor_msgs::msg::Imu();
     current_pressure_left_ = bitbots_msgs::msg::FootPressure();
@@ -57,18 +63,21 @@ public:
     pub_robot_state_ = this->create_publisher<humanoid_league_msgs::msg::RobotControlState>("robot_state", 1);
 
     // create subscriber motor goals
-    anim_sub_ = this->create_subscription<humanoid_league_msgs::msg::Animation>(
-        "animation", 1, std::bind(&HCM_CPP::animation_callback, this, _1));
+    rclcpp::CallbackGroup::SharedPtr client_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+    rclcpp::SubscriptionOptions options;
+    options.callback_group = client_cb_group;
+    anim_sub_ = this->create_subscription<humanoid_league_msgs::msg::Animation>(      
+        "animation", 1, std::bind(&HCM_CPP::animation_callback, this, _1));//, options);
     dynup_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
-        "dynup_motor_goals", 1, std::bind(&HCM_CPP::dynup_callback, this, _1));
+        "dynup_motor_goals", 1, std::bind(&HCM_CPP::dynup_callback, this, _1));//, options);
     head_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
-        "head_motor_goals", 1, std::bind(&HCM_CPP::head_goal_callback, this, _1));
+        "head_motor_goals", 1, std::bind(&HCM_CPP::head_goal_callback, this, _1));//, options);
     kick_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
-        "kick_motor_goals", 1, std::bind(&HCM_CPP::kick_goal_callback, this, _1));
+        "kick_motor_goals", 1, std::bind(&HCM_CPP::kick_goal_callback, this, _1));//, options);
     record_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
-        "record_motor_goals", 1, std::bind(&HCM_CPP::record_goal_callback, this, _1));
+        "record_motor_goals", 1, std::bind(&HCM_CPP::record_goal_callback, this, _1));//, options);
     walk_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
-        "walking_motor_goals", 1, std::bind(&HCM_CPP::walking_goal_callback, this, _1));
+        "walking_motor_goals", 1, std::bind(&HCM_CPP::walking_goal_callback, this, _1));//, options);
 
     // subscriber for high frequency topics
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
@@ -179,7 +188,20 @@ public:
       pub_controller_command_->publish(msg);
     }
   }
-  void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
+  void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {   
+    counter_++;
+    if(counter_ > 5000){
+      rclcpp::Duration time_diff = this->get_clock()->now() - msg.header.stamp;
+      // in ms
+      float latency = time_diff.seconds() * 1000;
+      time_diffs.push_back(latency);
+    } 
+
+    if (counter_ == 100 * 500 + 5000){
+      write_file();
+      RCLCPP_ERROR(this->get_logger(), "Finished");
+    } 
+
     last_walking_time_ = msg.header.stamp;
     if (current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == humanoid_league_msgs::msg::RobotControlState::WALKING) {
@@ -209,6 +231,13 @@ public:
 
   void imu_callback(sensor_msgs::msg::Imu msg) {
     current_imu_ = msg;
+  }
+
+  void write_file(){
+    std::ofstream myfile("hcm_latency.csv");
+    for(int i = 0; i < time_diffs.size(); i++){
+      myfile << time_diffs[i] << std::endl;
+    }
   }
 
   void loop() {
@@ -254,6 +283,9 @@ private:
   bool animation_requested_;
   builtin_interfaces::msg::Time last_animation_goal_time_;
 
+  std::vector<float> time_diffs;  
+  int counter_;
+
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
   rclcpp::Publisher<humanoid_league_msgs::msg::RobotControlState>::SharedPtr pub_robot_state_;
   rclcpp::Subscription<humanoid_league_msgs::msg::Animation>::SharedPtr anim_sub_;
@@ -279,13 +311,23 @@ int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_hcm::HCM_CPP>();
 
+  
+  auto walk_node = std::make_shared<bitbots_quintic_walk::WalkNode>();
+  walk_node->initializeEngine();
+  rclcpp::CallbackGroup::SharedPtr client_cb_group = walk_node->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / walk_node->getTimerFreq());
+  rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(walk_node, walk_node->get_clock(), timer_duration, [walk_node]() -> void {walk_node->run();});
+                                      //, client_cb_group);
+  
+
   rclcpp::executors::EventsExecutor::SharedPtr exec = std::make_shared<rclcpp::executors::EventsExecutor>();
   exec->add_node(node);
+  exec->add_node(walk_node);
   std::thread thread_obj(thread_spin, exec);
 
   rclcpp::Rate rate = rclcpp::Rate(500.0);
   while (rclcpp::ok()) {
-    node->loop();
+    node->loop();    
     rate.sleep();
   }
 
