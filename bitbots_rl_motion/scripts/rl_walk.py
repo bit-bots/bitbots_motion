@@ -29,12 +29,18 @@ if __name__ == '__main__':
             loaded_args = yaml.load(f, Loader=yaml.UnsafeLoader)  # pytype: disable=module-attr
             if loaded_args["env_kwargs"] is not None:
                 env_kwargs = loaded_args["env_kwargs"]
+            env_type = loaded_args["env"]
+            node.get_logger().error(f"{env_type}")
+            if env_type == "JointEnv-v1":
+                env_kwargs["cartesian_action"] = False
+                env_kwargs["cartesian_state"] = False
+                env_kwargs["reward_function"] = "JointActionVelReward"
     else:
         node.get_logger().fatal(f"No args.yml found in {args_path}")
         exit()
 
     env_kwargs["node"] = node
-    print(env_kwargs)
+    node.get_logger().error(f"{env_kwargs}")
     venv = create_test_env(
         "ExecuteEnv-v1",
         n_envs=1,
