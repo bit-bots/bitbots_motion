@@ -20,6 +20,7 @@ if __name__ == '__main__':
     package_path = get_package_share_directory("bitbots_rl_motion")
     model_folder = os.path.join(package_path, "rl_walk_models", model_folder)
     hyperparams, stats_path = get_saved_hyperparams(model_folder, norm_reward=False, test_mode=True)
+    node.get_logger().info(f"Loading model: {model_folder}")
 
     # load env_kwargs if existing
     env_kwargs = {}
