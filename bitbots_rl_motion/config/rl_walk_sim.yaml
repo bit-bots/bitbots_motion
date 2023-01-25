@@ -1,6 +1,10 @@
 /**:
   ros__parameters:
     use_sim_time: true
-#rl_walk:
-#  ros__parameters:
+rl_walk:
+  ros__parameters:
+    roll_offset: 0.0
+    pitch_offset: 0.0
+    ang_vel_x_offset: 0.0
+    ang_vel_y_offset: 0.0
 #    model_folder: 'pybullet_euler'

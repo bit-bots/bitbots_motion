@@ -6,6 +6,7 @@ import rclpy
 from ament_index_python import get_package_share_directory
 from rclpy import Parameter
 from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
 import deep_quintic
 import yaml
 from deep_quintic import env
@@ -22,8 +23,19 @@ if __name__ == '__main__':
     hyperparams, stats_path = get_saved_hyperparams(model_folder, norm_reward=False, test_mode=True)
     node.get_logger().info(f"Loading model: {model_folder}")
 
+    # offset parameter for IMU orientation
+    node.declare_parameter("roll_offset", Parameter.Type.DOUBLE)
+    node.declare_parameter("pitch_offset", Parameter.Type.DOUBLE)    
+    roll_offset = node.get_parameter("roll_offset").get_parameter_value().double_value
+    pitch_offset = node.get_parameter("pitch_offset").get_parameter_value().double_value
+    node.declare_parameter("ang_vel_x_offset", Parameter.Type.DOUBLE)
+    node.declare_parameter("ang_vel_y_offset", Parameter.Type.DOUBLE)    
+    ang_vel_x_offset = node.get_parameter("ang_vel_x_offset").get_parameter_value().double_value
+    ang_vel_y_offset = node.get_parameter("ang_vel_y_offset").get_parameter_value().double_value
+
     # load env_kwargs if existing
-    env_kwargs = {}
+    env_kwargs = {"roll_offset": roll_offset, "pitch_offset": pitch_offset, 
+                  "ang_vel_x_offset": ang_vel_x_offset, "ang_vel_y_offset": ang_vel_y_offset}
     args_path = os.path.join(model_folder, "args.yml")
     if os.path.isfile(args_path):
         with open(args_path, "r") as f:
@@ -63,5 +75,8 @@ if __name__ == '__main__':
     model_path = os.path.join(model_folder, "model")
     node.get_logger().info(f"Loading model from {model_path}")
     model = ALGOS[loaded_args['algo']].load(model_path, env=venv, custom_objects=custom_objects)
-
-    env.run_node(model, venv)
+    
+    env.start_timer(model, venv)
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    executor.spin()
