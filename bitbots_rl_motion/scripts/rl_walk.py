@@ -33,9 +33,21 @@ if __name__ == '__main__':
     ang_vel_x_offset = node.get_parameter("ang_vel_x_offset").get_parameter_value().double_value
     ang_vel_y_offset = node.get_parameter("ang_vel_y_offset").get_parameter_value().double_value
 
+    # linear scaling parameter for IMU orientation
+    node.declare_parameter("roll_scale", Parameter.Type.DOUBLE)
+    node.declare_parameter("pitch_scale", Parameter.Type.DOUBLE)
+    roll_scale = node.get_parameter("roll_scale").get_parameter_value().double_value
+    pitch_scale = node.get_parameter("pitch_scale").get_parameter_value().double_value
+    node.declare_parameter("ang_vel_x_scale", Parameter.Type.DOUBLE)
+    node.declare_parameter("ang_vel_y_scale", Parameter.Type.DOUBLE)    
+    ang_vel_x_scale = node.get_parameter("ang_vel_x_scale").get_parameter_value().double_value
+    ang_vel_y_scale = node.get_parameter("ang_vel_y_scale").get_parameter_value().double_value
+
     # load env_kwargs if existing
     env_kwargs = {"roll_offset": roll_offset, "pitch_offset": pitch_offset, 
-                  "ang_vel_x_offset": ang_vel_x_offset, "ang_vel_y_offset": ang_vel_y_offset}
+                  "ang_vel_x_offset": ang_vel_x_offset, "ang_vel_y_offset": ang_vel_y_offset,
+                  "roll_scale": roll_scale, "pitch_scale":pitch_scale, "ang_vel_x_scale":ang_vel_x_scale,
+                  "ang_vel_y_scale": ang_vel_y_scale}
     args_path = os.path.join(model_folder, "args.yml")
     if os.path.isfile(args_path):
         with open(args_path, "r") as f:
@@ -53,6 +65,7 @@ if __name__ == '__main__':
         exit()
 
     env_kwargs["node"] = node
+    #env_kwargs["step_freq"] = 240
     node.get_logger().error(f"{env_kwargs}")
     venv = create_test_env(
         "ExecuteEnv-v1",
