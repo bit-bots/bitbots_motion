@@ -218,11 +218,10 @@ void WalkNode::publish_debug(){
 bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   WalkRequest request(current_request_);
 
-  // update walk engine response
-  if (got_new_goals_) {
-    got_new_goals_ = false;
-    walk_engine_.setGoals(request);
-  }
+  request.linear_orders[0] += pitch_error_avg_ * 0.15;
+
+  walk_engine_.setGoals(request);
+
   checkPhaseRestAndReset();
   current_response_ = walk_engine_.update(dt);
 
@@ -464,9 +463,35 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
   current_trunk_fused_pitch_ = imu_fused.fusedPitch;
   current_trunk_fused_roll_ = imu_fused.fusedRoll;
 
-  // get angular velocities
+  // Get angular velocities
   roll_vel_ = msg->angular_velocity.x;
   pitch_vel_ = msg->angular_velocity.y;
+
+  // Calculate average pitch angle error over a given ros duration
+  pitch_error_buffer_.push_back(std::make_pair(
+    current_trunk_fused_pitch_ - walk_engine_.getWantedTrunkPitch(),
+    msg->header.stamp));
+
+
+  // Filter the buffer to only contain values within the last duration
+  pitch_error_buffer_.erase(
+    std::remove_if(
+      pitch_error_buffer_.begin(),
+      pitch_error_buffer_.end(),
+      [this, &msg](const std::pair<double, rclcpp::Time> &pair) {
+        auto pitch_error_duration = rclcpp::Duration::from_seconds(0.2);
+        return rclcpp::Time(msg->header.stamp) - pair.second > pitch_error_duration;
+      }),
+    pitch_error_buffer_.end());
+
+
+  pitch_error_avg_ = std::accumulate(
+    pitch_error_buffer_.begin(), 
+    pitch_error_buffer_.end(), 
+    0.0,
+    [](double sum, const std::pair<double, rclcpp::Time> &pair) {
+      return sum + pair.first;
+    }) / pitch_error_buffer_.size();
 
   if (imu_active_) {
     // compute the pitch offset to the currently wanted pitch of the engine

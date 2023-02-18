@@ -163,6 +163,9 @@ class WalkNode : public rclcpp::Node {
   double imu_pitch_vel_threshold_;
   double imu_roll_vel_threshold_;
 
+  double pitch_error_avg_ = 0;
+  std::vector<std::pair<double, rclcpp::Time>> pitch_error_buffer_;
+
   int odom_pub_factor_;
   double last_ros_update_time_;
 
