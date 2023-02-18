@@ -218,7 +218,7 @@ void WalkNode::publish_debug(){
 bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   WalkRequest request(current_request_);
 
-  request.linear_orders[0] += pitch_error_avg_ * 0.15;
+  request.linear_orders[0] += pitch_error_avg_ * 0.13;
 
   walk_engine_.setGoals(request);
 
