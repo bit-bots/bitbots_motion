@@ -218,7 +218,7 @@ void WalkNode::publish_debug(){
 bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   WalkRequest request(current_request_);
 
-  request.linear_orders[0] += pitch_error_avg_ * 0.13;
+  request.linear_orders[0] += pitch_error_avg_ * 0.16 + pitch_error_derivative_ * 5;
 
   walk_engine_.setGoals(request);
 
@@ -492,6 +492,12 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
     [](double sum, const std::pair<double, rclcpp::Time> &pair) {
       return sum + pair.first;
     }) / pitch_error_buffer_.size();
+
+  // Calculate the derivative of the pitch error
+  pitch_error_derivative_ = (pitch_error_avg_ - last_pitch_error_avg) / 0.2;  //TODO correct timing
+
+  // Calculate the integral of the pitch error
+  pitch_error_integral_ += pitch_error_avg_ * 0.2;  //TODO correct timing
 
   if (imu_active_) {
     // compute the pitch offset to the currently wanted pitch of the engine
