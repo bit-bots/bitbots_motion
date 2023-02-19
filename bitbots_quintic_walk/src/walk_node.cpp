@@ -484,7 +484,10 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
       }),
     pitch_error_buffer_.end());
 
+  // Save the last average pitch error
+  auto last_pitch_error_avg = pitch_error_avg_;
 
+  // Calculate the average pitch error
   pitch_error_avg_ = std::accumulate(
     pitch_error_buffer_.begin(), 
     pitch_error_buffer_.end(), 
