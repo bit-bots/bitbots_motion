@@ -230,7 +230,7 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   current_response_.current_fused_pitch = current_trunk_fused_pitch_;
   
   bitbots_msgs::msg::JointCommand command;
-  if (walk_engine_.getState()!=WalkState::IDLE){
+  //if (walk_engine_.getState()!=WalkState::IDLE){
     // get stabilized goals from stabilizer
     current_stabilized_response_ = stabilizer_.stabilize(current_response_, rclcpp::Duration::from_nanoseconds(1e9 * dt));
 
@@ -254,7 +254,27 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
     command.velocities = vels;
     command.accelerations = accs;
     command.max_currents = pwms;
-  }
+  
+    auto left_ankle_pitch_index = std::find(
+        command.joint_names.begin(), 
+        command.joint_names.end(), 
+        "LAnklePitch");
+
+    auto right_ankle_pitch_index = std::find(
+        command.joint_names.begin(), 
+        command.joint_names.end(), 
+        "RAnklePitch");
+
+    // Add ankle pitch offset based on the integral of the pitch error
+    double integral_gain = 0.001;
+    // The above but inplace 
+    command.positions[left_ankle_pitch_index - command.joint_names.begin()] += pitch_error_integral_ * integral_gain;
+    command.positions[right_ankle_pitch_index - command.joint_names.begin()] -= pitch_error_integral_ * integral_gain;
+    
+    // log values for debugging
+    RCLCPP_WARN(this->get_logger(), "Left ankle pitch goal: %f | Right ankle pitch goal: %f | Pitch error integral: %f | Offset: %f", command.positions[left_ankle_pitch_index - command.joint_names.begin()], command.positions[right_ankle_pitch_index - command.joint_names.begin()], pitch_error_integral_, pitch_error_integral_ * integral_gain);
+  //}
+
 
   return command;
 }
