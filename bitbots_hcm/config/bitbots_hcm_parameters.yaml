@@ -1,0 +1,93 @@
+/**:
+  ros__parameters:
+    #IMU
+    imu_timeout_duration: {
+      type: double,
+      default_value: 0.1,
+      describtion: " time without messages from the IMU till error is produced [s] ",
+    }
+
+    #Pressure sensors
+    pressure_timeout_duration: {
+      type: double,
+      default_value: 0.1,
+      describtion: "time without messages from the foot pressure sensors till error is produced [s]"
+    }
+    pressure_sensors_installed: {
+      type: bool,
+      default_value: false,
+    } 
+    foot_zero_service: {
+      type: string,
+      default_values: "set_foot_zero"
+    }
+
+    # Motors
+    motor_off_time: {
+      type: double,
+      default_value: 30000000.0, 
+      describtion: "time of no use or updates when the hcm goes to soft off"
+    } 
+    motor_timeout_duration: {
+      type: double,
+      default_value: 0.1,
+      describtion: "time without messages from the servos till error is produced [s]"
+    } 
+    
+    #Animations
+    anim_server_wait_time: {
+      type: double,
+      default_value: 1.0,
+      describtion: "time the hcm waits for animation server"
+    } 
+    animations:
+      walkready: {
+        type: string,
+        default_value: "walkready"
+      }
+      walkready_sim: "walkready_sim"
+      falling_front: "falling_front"
+      falling_back: "falling_back"
+      falling_left: "falling_left"
+      falling_right: "falling_right"
+      stand_up_front: "stand_up_front"
+      stand_up_back: "stand_up_back"
+      stand_up_left: "turning_back_left"
+      stand_up_right: "turning_back_right"
+      sit_down: "sit"
+      penalty: "walkready"
+      motor_off: "sit"
+      init: "init"
+      anim_package: "wolfgang_animations"
+      walkready_pose_threshold: 50.0 # [deg]
+
+    # Falling
+    stand_up_active: true # enables the robot to stand up automatically
+    falling_active: true # enables the check for falling and coresponding counter meassurements
+    #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
+    #Grenzwerte sanfter --> zu spaete Raktion
+    falling_thresh_gyro_pitch: 7.0 # > gyroY
+    falling_thresh_gyro_roll: 7.0 # > gyroX
+    falling_thresh_orient_roll: 60.0 # > Point of no return in degrees
+    falling_thresh_orient_pitch: 45.0 # > Point of no return in degrees
+    # smoothing threshold for classifier
+    smooth_threshold: 0.04
+
+    pick_up_accel_threshold: 7.0
+
+    falling:
+
+      #falling animations
+      "falling_front": "falling_front"
+      "falling_back": "falling_back"
+      "falling_left": "falling_left"
+      "falling_right": "falling_right"
+
+      "wolfgang":
+
+        #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
+        #dies erfolgt mit dem boden_koeffizient
+        "ground_coefficient": 1.0  #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
+
+        #false = motoren werden bei fallerkennung abgeschaltet
+        "dyn_falling_active": true

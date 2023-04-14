@@ -19,6 +19,7 @@
   <depend>backward_ros</depend>
   <depend>bitbots_docs</depend>
   <depend>bitbots_msgs</depend>
+  <depend>generate_parameter_library</depend>
   <depend>geometry_msgs</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>irobot_events_executor</depend>

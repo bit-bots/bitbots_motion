@@ -9,6 +9,7 @@ find_package(backward_ros REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(irobot_events_executor REQUIRED)
@@ -24,14 +25,20 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-fvisibility=hidden)
 endif()
 
+generate_parameter_library(
+  bitbots_hcm_parameters # cmake target name for the parameter library
+  src/bitbots_hcm_parameters.yaml # path to input yaml file
+)
+
 include_directories(${PYTHON_INCLUDE_DIRS})
 set(SOURCES src/hcm.cpp)
 
-add_executable(HCM ${SOURCES})
 
+add_executable(HCM ${SOURCES})
 ament_target_dependencies(HCM
     ament_cmake
     backward_ros
+    bitbots_hcm_parameters
     bitbots_msgs
     builtin_interfaces
     geometry_msgs
@@ -40,7 +47,8 @@ ament_target_dependencies(HCM
     rclcpp
     ros2_python_extension
     sensor_msgs
-    std_msgs)
+    std_msgs
+    )
 
 target_link_libraries(HCM ${PYTHON_LIBRARIES})
 
