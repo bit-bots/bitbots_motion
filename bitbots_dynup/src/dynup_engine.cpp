@@ -559,9 +559,26 @@ double DynupEngine::calcBackSplines() {
   l_foot_spline_.yaw()->addPoint(time, 0);
 
   /*
+   * Pose 4.5: Move hands to body
+   */
+  time += params_["arm_to_body_time"].get_value<double>(); 
+  l_hand_spline_.x()->addPoint(time, 0);
+  l_hand_spline_.y()->addPoint(time, params_["arm_side_offset_back"].get_value<double>());
+  l_hand_spline_.z()->addPoint(time, -params_["arm_extended_length"].get_value<double>());
+  l_hand_spline_.roll()->addPoint(time, 0);
+  l_hand_spline_.pitch()->addPoint(time, M_PI / 2);
+  l_hand_spline_.yaw()->addPoint(time, 0);
+  r_hand_spline_.x()->addPoint(time, 0);
+  r_hand_spline_.y()->addPoint(time, -params_["arm_side_offset_back"].get_value<double>());
+  r_hand_spline_.z()->addPoint(time, -params_["arm_extended_length"].get_value<double>());
+  r_hand_spline_.roll()->addPoint(time, 0);
+  r_hand_spline_.pitch()->addPoint(time, M_PI / 2);
+  r_hand_spline_.yaw()->addPoint(time, 0);
+
+  /*
    * Pose 5: Wait in squat to let instabilities settle
    */
-  time += params_["wait_in_squat_back"].get_value<double>();
+  time += params_["wait_in_squat_back"].get_value<double>() ;
   l_foot_spline_.x()->addPoint(time, 0);
   l_foot_spline_.y()->addPoint(time, params_["foot_distance"].get_value<double>());
   l_foot_spline_.z()->addPoint(time, 0);
