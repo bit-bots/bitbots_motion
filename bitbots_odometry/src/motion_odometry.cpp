@@ -96,12 +96,13 @@ void MotionOdometry::loop() {
         // scale odometry based on parameters
         double x = previous_to_current_support.getOrigin().x();
         if (x > 0) {
-          x = x * config_.x_forward_scaling;
+          x = x * config_.x_forward_scaling + config_.x_offset;
         } else {
-          x = x * config_.x_backward_scaling;
+          x = x * config_.x_backward_scaling + config_.x_offset;
         }
-        double y = previous_to_current_support.getOrigin().y() * config_.y_scaling;
-        double yaw = tf2::getYaw(previous_to_current_support.getRotation()) * config_.yaw_scaling;
+        double y = previous_to_current_support.getOrigin().y() * config_.y_scaling + config_.y_offset;
+        double yaw = tf2::getYaw(previous_to_current_support.getRotation()) * config_.yaw_scaling +
+                     config_.yaw_offset;
         previous_to_current_support.setOrigin({x, y, 0});
         tf2::Quaternion q;
         q.setRPY(0, 0, yaw);
@@ -130,13 +131,16 @@ void MotionOdometry::loop() {
       tf2::Transform current_support_to_base;
       tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
       double x = current_support_to_base.getOrigin().x();
+
+      rclcpp::Duration time_step = this->now() - foot_change_time_;
       if (current_odom_msg_.twist.twist.linear.x > 0) {
-        x = x * config_.x_forward_scaling;
+        x = x * config_.x_forward_scaling + config_.x_offset*time_step.seconds();
       } else {
-        x = x * config_.x_backward_scaling;
+        x = x * config_.x_backward_scaling + config_.x_offset*time_step.seconds();
       }
-      double y = current_support_to_base.getOrigin().y() * config_.y_scaling;
-      double yaw = tf2::getYaw(current_support_to_base.getRotation()) * config_.yaw_scaling;
+      double y = current_support_to_base.getOrigin().y() * config_.y_scaling + config_.y_offset*time_step.seconds();
+      double yaw = tf2::getYaw(current_support_to_base.getRotation()) * config_.yaw_scaling +
+                   config_.yaw_offset*time_step.seconds();
       current_support_to_base.setOrigin({x, y, current_support_to_base.getOrigin().z()});
       tf2::Quaternion q;
       q.setRPY(0, 0, yaw);
