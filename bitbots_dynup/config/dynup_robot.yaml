@@ -19,6 +19,7 @@ dynup:
     com_shift_1: 0.051
     com_shift_2: 0.0
     foot_angle: 51.76
+  
     hands_behind_back_x: 0.162
     hands_behind_back_z: 0.183
     leg_min_length_back: 0.253
@@ -27,8 +28,9 @@ dynup:
     time_full_squat_legs: 0.196
     time_legs_close: 0.068
     trunk_height_back: 0.179
-    trunk_overshoot_angle_back: 5.95
-    wait_in_squat_back: 1.0
+    trunk_overshoot_angle_back: 1.0
+    arm_to_body_time: 1.0
+    wait_in_squat_back: 3.0
 
     # Front
     arm_side_offset_front: 0.13
@@ -44,11 +46,11 @@ dynup:
     time_torso_45: 0.462
     trunk_overshoot_angle_front: -10.54
     trunk_x_front: 0.091
-    wait_in_squat_front: 1.2
+    wait_in_squat_front: 1.5
 
     time_walkready: 2.0
     # Rise
-    rise_time: 1.0
+    rise_time: 2.0
 
     # Descend
     descend_time: 0.25
