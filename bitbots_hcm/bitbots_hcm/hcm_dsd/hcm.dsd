@@ -27,10 +27,10 @@ $StartHCM
                         OKAY --> $PickedUp
                             PICKED_UP --> @PlayAnimationDynup + direction:walkready, @StayPickedUp
                             ON_GROUND --> $Fallen
-                                FALLEN_FRONT --> @CancelGoals, @PlayAnimationDynup + direction:front
-                                FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationDynup + direction:back
-                                FALLEN_RIGHT --> @CancelGoals, @TurnRightToBack + duration:1.5, @PlayAnimationDynup + direction:back
-                                FALLEN_LEFT --> @CancelGoals, @TurnLeftToBack + duration:1.5, @PlayAnimationDynup + direction:back
+                                FALLEN_FRONT --> @CancelGoals, @PlayAnimationDynup + direction:front + r:false
+                                FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationDynup + direction:back + r:false
+                                FALLEN_RIGHT --> @CancelGoals, @TurnRightToBack + duration:1.5 + r:false, @FallingPoseBack + duration:0.5 + r:false, @Wait + time:0.5 + r:false, @PlayAnimationDynup + direction:back + r:false
+                                FALLEN_LEFT --> @CancelGoals, @TurnLeftToBack + duration:1.5 + r:false,  @FallingPoseBack + duration:0.5 + r:false, @Wait + time:0.5 + r:false, @PlayAnimationDynup + direction:back + r:false
                                 NOT_FALLEN --> $Falling
                                     FALLING_LEFT --> @CancelGoals, @FallingPoseLeft + duration:0.5
                                     FALLING_RIGHT --> @CancelGoals, @FallingPoseRight + duration:0.5
