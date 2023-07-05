@@ -68,9 +68,9 @@ dynup:
 
 dynup_pid_trunk_fused_roll:
   ros__parameters:
-    p: 0.36
-    i: 0.8674
-    d: 0.03735
+    p: 0.0
+    i: 0.0
+    d: 0.0
     i_clamp: 0
     i_clamp_min: 0.0
     i_clamp_max: 0.0
@@ -78,9 +78,9 @@ dynup_pid_trunk_fused_roll:
     publish_state: False
 dynup_pid_trunk_fused_pitch:
   ros__parameters:
-    p: -0.42
-    i: -5.31646
-    d: -0.008295
+    p: -0.2
+    i: 0.0
+    d: 0.0
     i_clamp: 0.0
     i_clamp_min: 0.0
     i_clamp_max: 0.0

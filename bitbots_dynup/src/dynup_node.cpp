@@ -35,6 +35,7 @@ namespace bitbots_dynup {
   l_wrist_frame_ = this->get_parameter("l_wrist_frame").get_value<std::string>();
 
   param_names_ = {
+    "arm_to_body_time",
     "engine_rate",
     "arm_extended_length",
     "foot_distance",
