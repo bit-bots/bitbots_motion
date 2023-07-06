@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from platform import node
 import numpy
 import rclpy
 from rclpy.duration import Duration
@@ -11,26 +10,24 @@ from rclpy.time import Time
 
 from geometry_msgs.msg import PointStamped
 
-from std_msgs.msg import Bool, String
+from std_msgs.msg import Bool
 from sensor_msgs.msg import Imu, JointState
 from diagnostic_msgs.msg import DiagnosticArray
 
-from humanoid_league_msgs.msg import Animation as AnimationMsg, RobotControlState, Audio
+from humanoid_league_msgs.msg import RobotControlState, Audio
 from humanoid_league_msgs.action import PlayAnimation
 from humanoid_league_speaker.speaker import speak
 from bitbots_msgs.msg import FootPressure
-from bitbots_msgs.action import Dynup, Kick
+from bitbots_msgs.action import Dynup
 
-from bitbots_msgs.msg import JointCommand
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from dynamic_stack_decider.dsd import DSD
 import os
 import threading
-from rclpy.executors import ExternalShutdownException
 from bitbots_utils.utils import get_parameters_from_ros_yaml
 from ament_index_python import get_package_share_directory
 from rcl_interfaces.msg import Parameter as ParameterMsg
-from rclpy.serialization import serialize_message, deserialize_message
+from rclpy.serialization import deserialize_message
 from builtin_interfaces.msg import Time as TimeMsg
 
 class HardwareControlManager:
@@ -57,7 +54,6 @@ class HardwareControlManager:
         multi_executor = MultiThreadedExecutor()
         multi_executor.add_node(self.node)
         self.spin_thread = threading.Thread(target=multi_executor.spin, args=(), daemon=True)
-        #self.spin_thread = threading.Thread(target=rclpy.spin, args=(self.node,), daemon=True)
         self.spin_thread.start()
 
         self.blackboard = None
@@ -82,7 +78,7 @@ class HardwareControlManager:
 
         # important to make sure the connection to the speaker is established, for next line
         self.node.get_clock().sleep_for(Duration(seconds=0.1))
-        speak("Starting hcm", self.blackboard.speak_publisher, priority=50)
+        speak("Starting HCM", self.blackboard.speak_publisher, priority=50)
         self.node.create_subscription(Bool, "pause", self.pause, 1)
         self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
@@ -176,7 +172,6 @@ class HardwareControlManager:
 
     def set_pressure_left(self, pressure_msg_serialized):
         msg = deserialize_message(pressure_msg_serialized, FootPressure)
-        self.blackboard.last_pressure_update_time = msg.header.stamp
         self.blackboard.pressures[0] = msg.left_front
         self.blackboard.pressures[1] = msg.left_back
         self.blackboard.pressures[2] = msg.right_front
@@ -184,7 +179,6 @@ class HardwareControlManager:
 
     def set_pressure_right(self, pressure_msg_serialized):
         msg = deserialize_message(pressure_msg_serialized, FootPressure)
-        self.blackboard.last_pressure_update_time = msg.header.stamp
         self.blackboard.pressures[4] = msg.left_front
         self.blackboard.pressures[5] = msg.left_back
         self.blackboard.pressures[6] = msg.right_front
@@ -192,7 +186,6 @@ class HardwareControlManager:
 
     def set_imu(self, imu_msg_serialized):
         msg = deserialize_message(imu_msg_serialized, Imu)
-        self.blackboard.last_imu_update_time = msg.header.stamp
 
         self.blackboard.accel = numpy.array(
             [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])

@@ -16,10 +16,9 @@
 #include <rclcpp/duration.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <ros2_python_extension/init.hpp>
 #include <ros2_python_extension/serialization.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
-#include <rclcpp/executors/events_executor/events_executor.hpp>
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 
 #include "rcl_interfaces/srv/get_parameters.hpp"
 namespace py = pybind11;
@@ -28,18 +27,24 @@ using std::placeholders::_1;
 
 class BitbotsMoveitBindings {
 public:
-  BitbotsMoveitBindings(std::vector<py::bytes> parameter_msgs = {}) {
+  BitbotsMoveitBindings(std::string node_name, std::vector<py::bytes> parameter_msgs = {}) {
+    // initialize rclcpp if not already done
+    if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
+      rclcpp::init(0, nullptr);
+    }
+
     // deserialize parameters
     std::vector<rclcpp::Parameter> cpp_parameters = {};
     for (auto& parameter_msg : parameter_msgs) {
       cpp_parameters.push_back(rclcpp::Parameter::from_parameter_msg(
           ros2_python_extension::fromPython<rcl_interfaces::msg::Parameter>(parameter_msg)));
     }
+
     rclcpp::NodeOptions options = rclcpp::NodeOptions()
                                       .allow_undeclared_parameters(true)
                                       .parameter_overrides(cpp_parameters)
                                       .automatically_declare_parameters_from_overrides(true);
-    node_ = std::make_shared<rclcpp::Node>("BitbotsMoveitBindings", options);
+    node_ = std::make_shared<rclcpp::Node>(node_name, options);
     // set logging level to warn to reduce spam
     node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
 
@@ -83,7 +88,7 @@ public:
     if (!planning_scene_) {
       RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
     }
-    exec_ = std::make_shared<rclcpp::executors::EventsExecutor>();
+    exec_ = std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
     exec_->add_node(node_);
   }
 
@@ -264,7 +269,7 @@ private:
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   planning_scene::PlanningScenePtr planning_scene_;
   std::shared_ptr<rclcpp::Node> node_;
-  std::shared_ptr<rclcpp::executors::EventsExecutor> exec_;
+  std::shared_ptr<rclcpp::experimental::executors::EventsExecutor> exec_;
   std::thread t_;
 
   static tf2::Vector3 p(const geometry_msgs::msg::Point& p) {
@@ -358,9 +363,8 @@ private:
 };
 
 PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
-  m.def("initRos", &ros2_python_extension::initRos);
   py::class_<BitbotsMoveitBindings, std::shared_ptr<BitbotsMoveitBindings>>(m, "BitbotsMoveitBindings")
-      .def(py::init<std::vector<py::bytes>>())
+      .def(py::init<std::string, std::vector<py::bytes>>())
       .def("getPositionIK", &BitbotsMoveitBindings::getPositionIK)
       .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK)
       .def("getBioIKIK", &BitbotsMoveitBindings::getBioIKIK)

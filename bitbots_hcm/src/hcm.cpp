@@ -13,7 +13,7 @@
 #include "builtin_interfaces/msg/time.hpp"
 #include <ros2_python_extension/serialization.hpp>
 #include "std_msgs/msg/header.hpp"
-#include <rclcpp/executors/events_executor/events_executor.hpp>
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 
 
 using std::placeholders::_1;
@@ -268,7 +268,7 @@ private:
 };
 }  // namespace bitbots_hcm
 
-void thread_spin(rclcpp::executors::EventsExecutor::SharedPtr executor){
+void thread_spin(rclcpp::experimental::executors::EventsExecutor::SharedPtr executor){
   executor->spin();
 }
 
@@ -276,14 +276,22 @@ int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_hcm::HCM_CPP>();
 
-  rclcpp::executors::EventsExecutor::SharedPtr exec = std::make_shared<rclcpp::executors::EventsExecutor>();
+  rclcpp::experimental::executors::EventsExecutor::SharedPtr exec = std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
   exec->add_node(node);
   std::thread thread_obj(thread_spin, exec);
 
-  rclcpp::Rate rate = rclcpp::Rate(500.0);
+  auto last_time = node->get_clock()->now();
+  rclcpp::Rate rate = rclcpp::Rate(125.0);
   while (rclcpp::ok()) {
-    node->loop();
-    rate.sleep();
+    // Check if time progressed
+    auto current_time = node->get_clock()->now();
+    if (current_time > last_time) {
+      last_time = current_time;
+      node->loop();
+      rate.sleep();
+    }
+    // really short sleep to not waste cpu time
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
   rclcpp::shutdown();

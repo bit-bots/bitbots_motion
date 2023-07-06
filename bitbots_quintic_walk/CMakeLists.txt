@@ -16,6 +16,7 @@ find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
@@ -29,11 +30,16 @@ find_package(tf2 REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(irobot_events_executor REQUIRED)
+
 
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+generate_parameter_library(
+  bitbots_quintic_walk_parameters
+  src/parameters.yaml
+)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/WalkDebug.msg"
@@ -65,7 +71,6 @@ ament_target_dependencies(WalkNode
         control_toolbox
         geometry_msgs
         humanoid_league_msgs
-        irobot_events_executor
         moveit_ros_planning_interface
         nav_msgs
         rclcpp
@@ -80,7 +85,7 @@ ament_target_dependencies(WalkNode
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
-target_link_libraries(WalkNode "${cpp_typesupport_target}")
+target_link_libraries(WalkNode "${cpp_typesupport_target}" bitbots_quintic_walk_parameters)
 
 
 # create the lib
@@ -95,7 +100,6 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
         control_toolbox
         geometry_msgs
         humanoid_league_msgs
-        irobot_events_executor
         moveit_ros_planning_interface
         nav_msgs
         rclcpp
@@ -108,7 +112,7 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
         tf2_geometry_msgs
         tf2_ros)
 
-target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}")
+target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}" bitbots_quintic_walk_parameters)
 
 ament_python_install_package(bitbots_quintic_walk_py)
 
