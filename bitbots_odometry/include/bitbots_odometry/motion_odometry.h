@@ -9,6 +9,7 @@
 #include <biped_interfaces/msg/phase.hpp>
 #include <unistd.h>
 #include <tf2_ros/buffer.h>
+#include <Eigen/Core>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include "odometry_parameters.hpp"
 
@@ -28,6 +29,8 @@ class MotionOdometry : public rclcpp::Node {
   sensor_msgs::msg::JointState current_joint_states_;
   nav_msgs::msg::Odometry current_odom_msg_;
   tf2::Transform odometry_to_support_foot_;
+  tf2::Transform odom_with_offset_;
+  tf2::Transform last_odometry_to_base_link_;
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;

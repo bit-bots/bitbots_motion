@@ -143,8 +143,59 @@ void MotionOdometry::loop() {
       current_support_to_base.setRotation(q);
 
       tf2::Transform odom_to_base_link = odometry_to_support_foot_ * current_support_to_base;
+
+      // Apply calibration matrix consisting of the interactions between the x, y, yaw movement as well a bias
+      // This is used to calibrate the odometry to the real world
+
+      // Dummy 4x5 matrix
+      Eigen::MatrixXd calibration_matrix(5, 5);
+      calibration_matrix << 1, 0, 0, 0, 0,
+          0, 1, 0, 0, 0,
+          0, 0, 1, 0, 0,
+          0, 0, 0, 1, 0;
+
+      // Matrix layout:
+      // x, y, z, yaw, bias
+
+      // Get the movement of the robot since the last cycle
+      tf2::Transform delta_odom_to_base_link = last_odometry_to_base_link_.inverseTimes(odom_to_base_link);
+
+      // Bring the movement into the coordinate system of the robot at the beginning of the cycle
+      tf2::Transform delta_odom_to_base_link_robot = delta_odom_to_base_link * odom_with_offset_.inverse();
+
+      // Apply the calibration matrix
+      // Build a vector containing the movement of the robot (x, y, z, yaw, 1)
+      Eigen::VectorXd delta_odom_to_base_link_robot_vector(5);
+      delta_odom_to_base_link_robot_vector <<
+          delta_odom_to_base_link_robot.getOrigin().x(),
+          delta_odom_to_base_link_robot.getOrigin().y(),
+          delta_odom_to_base_link_robot.getOrigin().z(),
+          tf2::getYaw(delta_odom_to_base_link_robot.getRotation()),
+          1;
+
+      // Multiply the vector with the calibration matrix
+      Eigen::VectorXd delta_odom_to_base_link_robot_calibrated = calibration_matrix *
+          delta_odom_to_base_link_robot_vector;
+
+      // Create quaternion from yaw
+      tf2::Quaternion delta_odom_to_base_link_robot_calibrated_yaw;
+      delta_odom_to_base_link_robot_calibrated_yaw.setRPY(0, 0, delta_odom_to_base_link_robot_calibrated(3));
+
+      // Cast the vector back to a transform
+      auto delta_odom_to_base_link_robot_calibrated_transform = tf2::Transform(
+          delta_odom_to_base_link_robot_calibrated_yaw,
+          tf2::Vector3(delta_odom_to_base_link_robot_calibrated(0),
+                       delta_odom_to_base_link_robot_calibrated(1),
+                       delta_odom_to_base_link_robot_calibrated(2)));
+
+      // Apply the calibrated movement to the robot
+      odom_with_offset_ = odom_with_offset_ * delta_odom_to_base_link_robot_calibrated_transform;
+
+      // Save the current transform for the next cycle
+      last_odometry_to_base_link_ = odom_to_base_link;
+
       geometry_msgs::msg::TransformStamped odom_to_base_link_msg = geometry_msgs::msg::TransformStamped();
-      odom_to_base_link_msg.transform = tf2::toMsg(odom_to_base_link);
+      odom_to_base_link_msg.transform = tf2::toMsg(odom_with_offset_);
       odom_to_base_link_msg.header.stamp = current_support_to_base_msg.header.stamp;
       odom_to_base_link_msg.header.frame_id = odom_frame_;
       odom_to_base_link_msg.child_frame_id = base_link_frame_;

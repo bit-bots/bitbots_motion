@@ -31,6 +31,8 @@ include_directories(include)
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
+find_package(Eigen3 REQUIRED)
+
 add_executable(odometry_fuser src/odometry_fuser.cpp)
 add_executable(motion_odometry src/motion_odometry.cpp)
 
