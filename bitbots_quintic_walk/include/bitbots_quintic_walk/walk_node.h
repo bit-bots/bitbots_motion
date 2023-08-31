@@ -148,6 +148,11 @@ class WalkNode : public rclcpp::Node {
 
   double last_ros_update_time_;
 
+  double pitch_error_avg_ = 0;
+  double pitch_error_derivative_ = 0;
+  double pitch_error_integral_ = 0;
+  std::vector<std::pair<double, rclcpp::Time>> pitch_error_buffer_;
+
   int robot_state_;
 
   int current_support_foot_;
