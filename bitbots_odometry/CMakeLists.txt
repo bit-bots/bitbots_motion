@@ -6,6 +6,14 @@ if (NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 17)
 endif ()
 
+
+if(DEFINED ENV{ROBOT_NAME})
+  set(ROBOT_NAME $ENV{ROBOT_NAME})
+else()
+  set(ROBOT_NAME "default")
+endif ()
+
+
 find_package(Eigen3 REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(biped_interfaces REQUIRED)
@@ -24,7 +32,7 @@ find_package(tf2_ros REQUIRED)
 
 generate_parameter_library(
   odometry_parameters
-  config/odometry_config_template.yaml
+  config/odometry_config_${ROBOT_NAME}.yaml
 )
 
 include_directories(include)
