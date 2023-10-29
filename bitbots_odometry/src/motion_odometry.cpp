@@ -95,13 +95,9 @@ void MotionOdometry::loop() {
         // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
         // scale odometry based on parameters
         double x = previous_to_current_support.getOrigin().x();
-        if (x > 0) {
-          x = x * config_.x_forward_scaling;
-        } else {
-          x = x * config_.x_backward_scaling;
-        }
-        double y = previous_to_current_support.getOrigin().y() * config_.y_scaling;
-        double yaw = tf2::getYaw(previous_to_current_support.getRotation()) * config_.yaw_scaling;
+      
+        double y = previous_to_current_support.getOrigin().y();
+        double yaw = tf2::getYaw(previous_to_current_support.getRotation());
         previous_to_current_support.setOrigin({x, y, 0});
         tf2::Quaternion q;
         q.setRPY(0, 0, yaw);
@@ -130,13 +126,8 @@ void MotionOdometry::loop() {
       tf2::Transform current_support_to_base;
       tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
       double x = current_support_to_base.getOrigin().x();
-      if (current_odom_msg_.twist.twist.linear.x > 0) {
-        x = x * config_.x_forward_scaling;
-      } else {
-        x = x * config_.x_backward_scaling;
-      }
-      double y = current_support_to_base.getOrigin().y() * config_.y_scaling;
-      double yaw = tf2::getYaw(current_support_to_base.getRotation()) * config_.yaw_scaling;
+      double y = current_support_to_base.getOrigin().y();
+      double yaw = tf2::getYaw(current_support_to_base.getRotation());
       current_support_to_base.setOrigin({x, y, current_support_to_base.getOrigin().z()});
       tf2::Quaternion q;
       q.setRPY(0, 0, yaw);

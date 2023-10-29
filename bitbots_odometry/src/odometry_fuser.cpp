@@ -114,7 +114,7 @@ void OdometryFuser::loop() {
   geometry_msgs::msg::Transform fused_odom_msg;
   fused_odom_msg = toMsg(fused_odometry);
   tf_.transform = fused_odom_msg;
-  br_->sendTransform(tf_);
+  //br_->sendTransform(tf_);
 }
 
 void OdometryFuser::supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) {
