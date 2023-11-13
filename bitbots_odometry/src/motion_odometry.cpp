@@ -86,7 +86,7 @@ void MotionOdometry::loop() {
     prev_stand_right_ = curr_stand_right_;
 
     }
-    else if (prev_stand_left_ == false && curr_stand_left_ ==true)
+    else if (prev_stand_left_ == false && curr_stand_left_ ==true){
         if (prev_stand_right_ == true){
 
       prev_stand_right_ = curr_stand_right_;
@@ -101,7 +101,7 @@ void MotionOdometry::loop() {
 
   
   sup_state.header.stamp = this->get_clock()->now();
-  pub_support_->publish(sup_state);
+  pub_foot_pressure_support_state_->publish(sup_state);
   
     // check if step finished, meaning left->right or right->left support. double support is skipped
     // the support foot change is published when the joint goals for the last movements are published.
@@ -253,9 +253,8 @@ void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
   current_odom_msg_ = *msg;
 }
 
-  void pressure_l_callback(bitbots_msgs::msg::FootPressure msg) {
-    current_pressure_left_ = msg;
-    summed_pressure = current_pressure_left_.left_back +current_pressure_left_.left_front + current_pressure_left_.right_front + current_pressure_left_.right_back;
+  void MotionOdometry::pressure_l_callback(bitbots_msgs::msg::FootPressure msg) {
+    float_t summed_pressure = msg.left_back +msg.left_front + msg.right_front + msg.right_back;
     if (summed_pressure > 30){
       curr_stand_left_ = false;
     }
@@ -265,9 +264,8 @@ void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
 
   }
 
-  void pressure_r_callback(bitbots_msgs::msg::FootPressure msg) {
-    current_pressure_right_ = msg;
-    summed_pressure = current_pressure_right_.left_back +current_pressure_right_.left_front + current_pressure_right_.right_front + current_pressure_right_.right_back;
+  void MotionOdometry::pressure_r_callback(bitbots_msgs::msg::FootPressure msg) {
+    float_t summed_pressure = msg.left_back +msg.left_front + msg.right_front + msg.right_back;
     if (summed_pressure > 30){
       curr_stand_right_ = false;
     }

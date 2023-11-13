@@ -50,6 +50,8 @@ class MotionOdometry : public rclcpp::Node {
   void supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg);
   void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
+  void pressure_l_callback(bitbots_msgs::msg::FootPressure msg);
+  void pressure_r_callback(bitbots_msgs::msg::FootPressure msg);
 
   std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
