@@ -12,6 +12,8 @@
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include "odometry_parameters.hpp"
 
+#include "bitbots_msgs/msg/foot_pressure.hpp"
+
 using std::placeholders::_1;
 
 namespace bitbots_odometry {
@@ -35,6 +37,10 @@ class MotionOdometry : public rclcpp::Node {
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
+  // put this in other package later
+  rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_l_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_r_sub_;
+  rclcpp::Publisher<biped_interfaces::msg::Phase>::SharedPtr pub_foot_pressure_support_state_;
 
   // Declare parameter listener and struct from the generate_parameter_library
   motion_odometry::ParamListener param_listener_;
@@ -50,6 +56,10 @@ class MotionOdometry : public rclcpp::Node {
   rclcpp::Time foot_change_time_;
   std::string previous_support_link_;
   std::string current_support_link_;
+  bool curr_stand_left_;
+  bool prev_stand_left_;
+  bool curr_stand_right_;
+  bool prev_stand_right_;
   rclcpp::Time start_time_;
 };
 

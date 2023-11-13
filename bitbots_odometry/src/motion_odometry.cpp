@@ -1,5 +1,4 @@
 #include <bitbots_odometry/motion_odometry.h>
-
 namespace bitbots_odometry {
 
 MotionOdometry::MotionOdometry() : Node("MotionOdometry"),
@@ -9,6 +8,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"),
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this);
   br_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
   config_ = param_listener_.get_params();
+
 
   this->declare_parameter<std::string>("base_link_frame", "base_link");
   this->get_parameter("base_link_frame", base_link_frame_);
@@ -41,6 +41,13 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"),
                                                          1,
                                                          std::bind(&MotionOdometry::odomCallback, this, _1));
 
+  // use foot pressure information, put into different package later
+  pressure_l_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
+        "foot_pressure_left/filtered", 1, std::bind(&MotionOdometry::pressure_l_callback, this, _1));
+  pressure_r_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
+        "foot_pressure_right/filtered", 1, std::bind(&MotionOdometry::pressure_r_callback, this, _1));
+  pub_foot_pressure_support_state_ = this->create_publisher<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state", 1);
+
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("motion_odometry", 1);
   // set the origin to 0. will be set correctly on recieving first support state
   odometry_to_support_foot_.setOrigin({0, 0, 0});
@@ -57,6 +64,7 @@ void MotionOdometry::loop() {
 
   //check if joint states were received, otherwise we can't provide odometry
   rclcpp::Duration joints_delta_t = this->now() - joint_update_time_;
+
   if (joints_delta_t.seconds() > 0.1) {
     // only warn if we did not just start as this results in unecessary warnings
     if ((this->now() - start_time_).seconds() > 10) {
@@ -64,6 +72,37 @@ void MotionOdometry::loop() {
                            "No joint states received. Will not provide odometry.");
     }
   } else {
+    // move to different package later
+    biped_interfaces::msg::Phase sup_state;
+    if (prev_stand_right_ == false &&  curr_stand_right_ == true){
+        if (prev_stand_left_ == true){
+
+      prev_stand_left_ = curr_stand_left_;
+      sup_state.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
+    }
+    else{
+      sup_state.phase = biped_interfaces::msg::Phase::RIGHT_STANCE;
+    }
+    prev_stand_right_ = curr_stand_right_;
+
+    }
+    else if (prev_stand_left_ == false && curr_stand_left_ ==true)
+        if (prev_stand_right_ == true){
+
+      prev_stand_right_ = curr_stand_right_;
+
+      sup_state.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
+    }
+    else{
+      sup_state.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
+    }
+    prev_stand_left_ = curr_stand_left_;
+    }
+
+  
+  sup_state.header.stamp = this->get_clock()->now();
+  pub_support_->publish(sup_state);
+  
     // check if step finished, meaning left->right or right->left support. double support is skipped
     // the support foot change is published when the joint goals for the last movements are published.
     // it takes some time till the joints actually reach this position, this can create some offset
@@ -213,6 +252,29 @@ void MotionOdometry::jointStateCb(const sensor_msgs::msg::JointState::SharedPtr 
 void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
   current_odom_msg_ = *msg;
 }
+
+  void pressure_l_callback(bitbots_msgs::msg::FootPressure msg) {
+    current_pressure_left_ = msg;
+    summed_pressure = current_pressure_left_.left_back +current_pressure_left_.left_front + current_pressure_left_.right_front + current_pressure_left_.right_back;
+    if (summed_pressure > 30){
+      curr_stand_left_ = false;
+    }
+    else{
+      curr_stand_left_ = true;
+    }
+
+  }
+
+  void pressure_r_callback(bitbots_msgs::msg::FootPressure msg) {
+    current_pressure_right_ = msg;
+    summed_pressure = current_pressure_right_.left_back +current_pressure_right_.left_front + current_pressure_right_.right_front + current_pressure_right_.right_back;
+    if (summed_pressure > 30){
+      curr_stand_right_ = false;
+    }
+    else{
+      curr_stand_left_ = true;
+    }
+  }
 
 }
 
