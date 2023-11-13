@@ -12,7 +12,7 @@
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include "odometry_parameters.hpp"
 
-#include "bitbots_msgs/msg/foot_pressure.hpp"
+#include <bitbots_msgs/msg/foot_pressure.hpp>
 
 using std::placeholders::_1;
 

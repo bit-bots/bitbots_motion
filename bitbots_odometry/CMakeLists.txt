@@ -22,6 +22,8 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
+find_package(bitbots_msgs REQUIRED)
+
 generate_parameter_library(
   odometry_parameters
   config/odometry_config_template.yaml
@@ -57,6 +59,7 @@ ament_target_dependencies(
   ament_cmake
   generate_parameter_library
   rclcpp
+  bitbots_msgs
 )
 
 ament_target_dependencies(

@@ -25,6 +25,8 @@
   <depend>biped_interfaces</depend>
   <depend>generate_parameter_library</depend>
 
+  <depend>bitbots_msgs</depend>
+
   <export>
     <bitbots_documentation>
       <status>tested_robot</status>
