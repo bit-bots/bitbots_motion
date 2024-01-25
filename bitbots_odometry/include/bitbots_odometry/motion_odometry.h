@@ -13,7 +13,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2/utils.h>
 #include <unistd.h>
-
+#include <bitbots_msgs/msg/foot_pressure.hpp>
 using std::placeholders::_1;
 
 namespace bitbots_odometry {
@@ -50,6 +50,7 @@ class MotionOdometry : public rclcpp::Node {
   std::string previous_support_link_;
   std::string current_support_link_;
   rclcpp::Time start_time_;
+
 };
 
 }

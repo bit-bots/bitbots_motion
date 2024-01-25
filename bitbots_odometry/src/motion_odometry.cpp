@@ -24,7 +24,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"),
   previous_support_state_ = -1;
 
   walk_support_state_sub_ =
-      this->create_subscription<biped_interfaces::msg::Phase>("walk_support_state",
+      this->create_subscription<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state",
                                                               1,
                                                               std::bind(&MotionOdometry::supportCallback,
                                                                         this, _1));
@@ -46,6 +46,9 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"),
   foot_change_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   previous_support_link_ = r_sole_frame_;
   start_time_ = this->now();
+
+
+
 }
 
 void MotionOdometry::loop() {
@@ -173,7 +176,7 @@ void MotionOdometry::loop() {
 void MotionOdometry::supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) {
   current_support_state_ = msg->phase;
   current_support_state_time_ = msg->header.stamp;
-
+  
   // remember if we received first support state, only remember left or right
   if (previous_support_state_ == -1 && current_support_state_ != biped_interfaces::msg::Phase::DOUBLE_STANCE) {
     std::string current_support_link;
@@ -205,6 +208,7 @@ void MotionOdometry::supportCallback(const biped_interfaces::msg::Phase::SharedP
 void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
   current_odom_msg_ = *msg;
 }
+
 
 }
 
